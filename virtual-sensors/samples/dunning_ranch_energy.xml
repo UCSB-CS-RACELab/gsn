@@ -4,7 +4,7 @@
 		<output-structure>
 			<field name="id" type="int" />
 			<field name="timestamp" type="int" />
-			<field name="interval" type="int" /> <!-- units in seconds -->
+			<field name="time_interval" type="int" /> <!-- units in seconds -->
 			<field name="amount" type="double" />
 			<field name="meterAccount_id" type="int" />
 		</output-structure>
@@ -21,7 +21,7 @@
 			<source alias="source1" sampling-rate="1000" storage-size="1">
 				<address wrapper="csv">
 					<predicate key="file">data/Raw_data_dunning.csv</predicate>
-					<predicate key="fields">id,timestamp,interval,amount,meterAccount_id</predicate>
+					<predicate key="fields">id,timestamp,time_interval,amount,meterAccount_id</predicate>
 					<predicate key="formats">numeric,numeric,numeric,numeric,numeric</predicate>
 					<predicate key="bad-values">NaN,6999,-6999,null</predicate>
 					<predicate key="timezone">Etc/GMT-8</predicate>
