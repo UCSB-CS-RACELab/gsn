@@ -25,8 +25,9 @@
 					<predicate key="formats">numeric,numeric,numeric,numeric,numeric</predicate>
 					<predicate key="bad-values">NaN,6999,-6999,null</predicate>
 					<predicate key="timezone">Etc/GMT-8</predicate>
-					<predicate key="sampling">900</predicate>
+					<predicate key="sampling">10000</predicate> <!-- how often to read the data file (ms)-->
 					<predicate key="check-point-directory">csv-check-points</predicate>
+			        <predicate key="skip-first-lines">1</predicate>
 					<predicate key="separator">;</predicate>
 				</address>
 				<query>select * from wrapper
