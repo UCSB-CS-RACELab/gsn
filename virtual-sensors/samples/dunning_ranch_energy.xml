@@ -16,9 +16,10 @@
 		<predicate key="LATITUDE">35.588772</predicate>
 		<predicate key="LONGITUDE">-120.774214</predicate>
 	</addressing>
-	<streams>
+    <storage history-size="24h" />
+    <streams>
 		<stream name="input1">
-			<source alias="source1" sampling-rate="1000" storage-size="1">
+			<source alias="source1" sampling-rate="1" storage-size="1">
 				<address wrapper="csv">
 					<predicate key="file">data/Raw_data_dunning.csv</predicate>
 					<predicate key="fields">id,timestamp,time_interval,amount,meterAccount_id</predicate>
