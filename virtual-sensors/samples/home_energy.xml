@@ -20,7 +20,7 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="csv">
-                    <predicate key="file">data/energy-home.data</predicate>
+                    <predicate key="file">data/home-energy.data</predicate>
                     <predicate key="fields">meter_timestamp,recv_timestamp,label,KWh</predicate>
                     <predicate key="formats">numeric,numeric,string,numeric</predicate>
                     <predicate key="bad-values">NaN,6999,-6999,null</predicate>
