@@ -31,10 +31,12 @@
                 </address>
                 <query>select recv_timestamp as time, KWh
                         from wrapper
-                        where label = "InstantaneousDemand"
                 </query>
             </source>
-            <query>select * from source1</query>
+            <query>select source1.time, source1.KWh 
+		   from source1
+		   where source1.label = "InstantaneousDemand"
+	    </query>
         </stream>
     </streams>
 </virtual-sensor>
