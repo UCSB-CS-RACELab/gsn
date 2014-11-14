@@ -2,9 +2,7 @@
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <output-structure>
-            <field name="meter_timestamp" type="double" />
             <field name="recv_timestamp" type="double" />
-            <field name="label" type="string" />
             <field name="KWh" type="double" />
         </output-structure>
     </processing-class>
@@ -29,13 +27,12 @@
                     <predicate key="check-point-directory">csv-check-points</predicate>
                     <predicate key="separator">:</predicate>
                 </address>
-                <query>select recv_timestamp as time, KWh
-                        from wrapper
+                <query>select * from wrapper
                 </query>
             </source>
-            <query>select source1.time, source1.KWh 
-		   from source1
-		   where source1.label = "InstantaneousDemand"
+            <query>select source1.recv_timestamp, source1.KWh
+		            from source1
+		            where source1.label = "InstantaneousDemand"
 	    </query>
         </stream>
     </streams>
