@@ -1,0 +1,59 @@
+<virtual-sensor name="home_weather" priority="10" publish-to-lsm="true">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <output-structure>
+            <field name="date" type="string" />
+            <field name="time" type="string" />
+            <field name="am_or_pm" type="string" />
+            <field name="heat_index" type="double" />
+            <field name="temp_out" type="double" />
+            <field name="wind_chill" type="double" />
+            <field name="hi_temp" type="double" />
+            <field name="low_temp" type="double" />
+            <field name="humidity_out" type="double" />
+            <field name="dew_point" type="double" />
+            <field name="wind_speed" type="int" />
+            <field name="wind_hi" type="int" />
+            <field name="direction" type="string" />
+            <field name="rain" type="double" />
+            <field name="bar" type="double" />
+            <field name="temp_in" type="double" />
+            <field name="humidity_in" type="double" />
+            <field name="archive" type="string" />
+        </output-structure>
+    </processing-class>
+    <description>Home weather data</description>
+    <life-cycle pool-size="10"/>
+    <addressing>
+        <predicate key="geographical">Chandra Home</predicate>
+        <predicate key="LATITUDE">34.414912</predicate>
+        <predicate key="LONGITUDE"> -119.849030</predicate>
+    </addressing>
+    <storage history-size="24h" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="csv">
+                    <predicate key="file">data/exportDBcjkNov112014.txt</predicate>
+                    <predicate key="fields">timed,timed,timed,heat_index,temp_out,wind_chill,hi_temp,low_temp,
+                                            humidity_out,dew_point,wind_speed,wind_hi,direction,rain,bar,temp_in,
+                                            humidity_in,archive
+                    </predicate>
+                    <predicate key="formats">timestamp(MM-dd-yy),timestamp(hh:mm),timestamp(a),numeric,numeric,numeric,numeric,numeric,
+                                            numeric,numeric,numeric,numeric,string,numeric,numeric,numeric,
+                                            numeric,numeric
+                    </predicate>
+                    <predicate key="bad-values">NaN,6999,-6999,null</predicate>
+                    <predicate key="timezone">Etc/GMT-8</predicate>
+                    <predicate key="sampling">10000</predicate> <!-- how often to read the data file (ms)-->
+                    <predicate key="check-point-directory">csv-check-points</predicate>
+                    <predicate key="skip-first-lines">3</predicate>
+                    <predicate key="separator"> </predicate>
+                </address>
+                <query>select * from wrapper
+                </query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>
