@@ -1,0 +1,39 @@
+<virtual-sensor name="home_energy" priority="10" publish-to-lsm="true">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <output-structure>
+            <field name="recv_timestamp" type="double" />
+            <field name="KWh" type="double" />
+        </output-structure>
+    </processing-class>
+    <description>Home (rainforest) energy data</description>
+    <life-cycle pool-size="10"/>
+    <addressing>
+        <predicate key="geographical">Chandra Home</predicate>
+        <predicate key="LATITUDE">34.414912</predicate>
+        <predicate key="LONGITUDE"> -119.849030</predicate>
+    </addressing>
+    <storage history-size="24h" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="csv">
+                    <predicate key="file">data/home-energy.data</predicate>
+                    <predicate key="fields">meter_timestamp,recv_timestamp,label,KWh</predicate>
+                    <predicate key="formats">numeric,numeric,string,numeric</predicate>
+                    <predicate key="bad-values">NaN,6999,-6999,null</predicate>
+                    <predicate key="timezone">Etc/GMT-8</predicate>
+                    <predicate key="sampling">1000</predicate> <!-- how often to read the data file (ms)-->
+                    <predicate key="check-point-directory">csv-check-points</predicate>
+                    <predicate key="separator">:</predicate>
+                </address>
+                <query>select * from wrapper
+                </query>
+            </source>
+            <query>select source1.recv_timestamp, source1.KWh
+		            from source1
+		            where source1.label = "InstantaneousDemand"
+	    </query>
+        </stream>
+    </streams>
+</virtual-sensor>
