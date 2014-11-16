@@ -1,0 +1,40 @@
+<virtual-sensor name="dunning_ranch_energy" priority="10" publish-to-lsm="true">
+	<processing-class>
+		<class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+		<output-structure>
+			<field name="id" type="int" />
+			<field name="timestamp" type="int" />
+			<field name="time_interval" type="int" /> <!-- units in seconds -->
+			<field name="amount" type="double" />
+			<field name="meterAccount_id" type="int" />
+		</output-structure>
+	</processing-class>
+	<description>Dunning Ranch Energy Data</description>
+	<life-cycle pool-size="10"/>
+	<addressing>
+		<predicate key="geographical">Dunning Ranch</predicate>
+		<predicate key="LATITUDE">35.588772</predicate>
+		<predicate key="LONGITUDE">-120.774214</predicate>
+	</addressing>
+    <storage history-size="24h" />
+    <streams>
+		<stream name="input1">
+			<source alias="source1" sampling-rate="1" storage-size="1">
+				<address wrapper="csv">
+					<predicate key="file">data/Raw_data_dunning.csv</predicate>
+					<predicate key="fields">id,timestamp,time_interval,amount,meterAccount_id</predicate>
+					<predicate key="formats">numeric,numeric,numeric,numeric,numeric</predicate>
+					<predicate key="bad-values">NaN,6999,-6999,null</predicate>
+					<predicate key="timezone">Etc/GMT-8</predicate>
+					<predicate key="sampling">10000</predicate> <!-- how often to read the data file (ms)-->
+					<predicate key="check-point-directory">csv-check-points</predicate>
+			        <predicate key="skip-first-lines">1</predicate>
+					<predicate key="separator">;</predicate>
+				</address>
+				<query>select * from wrapper
+				</query>
+			</source>
+			<query>select * from source1</query>
+		</stream>
+	</streams>
+</virtual-sensor>
