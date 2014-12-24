@@ -1,8 +1,8 @@
 <sensor-server>
    <name>GSN Server</name>
-   <author>GSN Development Team.</author>
+   <author>UCSB CS RACELab</author>
    <email>my email address</email>
-   <description>Not Provided</description>
+   <description>GSN for SmartFarm</description>
    <port>22001</port>
    <zmq-enable>false</zmq-enable>
    <zmqproxy>22022</zmqproxy>

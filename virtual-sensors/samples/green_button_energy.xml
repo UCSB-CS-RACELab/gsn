@@ -2,8 +2,8 @@
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <output-structure>
-            <field name="period_start" type="bigint" />
-            <field name="period_end" type="bigint" />
+            <field name="period_start" type="string" />
+            <field name="period_end" type="string" />
             <field name="usage_KWh" type="double" />
         </output-structure>
     </processing-class>
@@ -21,8 +21,8 @@
                 <address wrapper="csv">
                     <predicate key="file">data/green_button_energy.csv</predicate>
                     <predicate key="fields">period_start, period_end, usage_KWh, Quality</predicate>
-                    <predicate key="formats">timestamp(y-M-d H:m:s),timestamp(y-M-d H:m:s),numeric, string</predicate>
-                    <!--<predicate key="formats">string,string,numeric, string</predicate>-->
+                    <!--<predicate key="formats">timestamp(y-M-d H:m:s),timestamp(y-M-d H:m:s),numeric, string</predicate>-->
+                    <predicate key="formats">string,string,numeric, string</predicate>
                     <predicate key="bad-values">NaN,6999,-6999,null</predicate>
                     <predicate key="timezone">Etc/GMT-8</predicate>
                     <predicate key="sampling">10000</predicate> <!-- how often to read the data file (ms)-->
