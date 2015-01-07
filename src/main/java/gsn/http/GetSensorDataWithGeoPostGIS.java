@@ -79,6 +79,7 @@ public class GetSensorDataWithGeoPostGIS {
     public static GetSensorDataWithGeoPostGIS getInstance() { // Singleton
         if (instance == null) {
             instance = new GetSensorDataWithGeoPostGIS();
+            loadProperties();
         }
         return instance;
     }
@@ -107,6 +108,67 @@ public class GetSensorDataWithGeoPostGIS {
             }
         }
         return s.toString().trim().replace(" ", SEPARATOR);
+    }
+
+    /*
+    * Builds sensors table from list of sensors currently loaded in the system
+    * */
+    public static boolean buildGeoIndex() {
+
+        boolean success = true;
+
+        sensors = new Vector<String>();
+        coordinates = new Vector<Point>();
+
+        getListOfSensors();
+
+        try {
+            Connection conn = connect();
+
+            //((org.postgresql.PGConnection) conn).addDataType("geometry", "org.postgis.PGgeometry");
+            //((org.postgresql.PGConnection) conn).addDataType("box3d", "org.postgis.PGbox3d");
+
+            String st_create_table = "DROP INDEX IF EXISTS gist_sensors;"
+                    + " DROP TABLE IF EXISTS sensors;"
+                    + " CREATE TABLE sensors ( \"name\" character(255) NOT NULL, \"location\" geometry NOT NULL );"
+                    + " CREATE INDEX gist_sensors ON sensors USING GIST ( location ); ";
+
+            logger.warn("Running query: " + st_create_table);
+
+            PreparedStatement prepareStatement = conn.prepareStatement(st_create_table);
+            prepareStatement.execute();
+            prepareStatement.close();
+
+            for (int i = 0; i < coordinates.size(); i++) {
+                String insert = "insert into sensors values ( '" + sensors.get(i) + "', ST_MakePoint(" + coordinates.get(i).getX() + " , " + coordinates.get(i).getY() + " , " + coordinates.get(i).getZ() + ") );";
+                PreparedStatement ps = conn.prepareStatement(insert);
+                ps.execute();
+                ps.close();
+                logger.warn(insert);
+            }
+
+            Statement s = conn.createStatement();
+            ResultSet r = s.executeQuery("select location, name from sensors");
+            while (r.next()) {
+                PGgeometry geom = (PGgeometry) r.getObject(1);
+                String name = r.getString(2);
+                logger.warn("Geometry " + geom.toString() + " : " + name);
+            }
+            s.close();
+            conn.close();
+
+        }
+        catch (SQLException e) {
+            logger.warn(e.getMessage(), e);
+            success = false;
+        }
+        catch (ClassNotFoundException e) {
+            logger.warn(e.getMessage(), e);
+            success = false;
+        }
+
+        return success;
+
     }
 
     /*
@@ -141,89 +203,22 @@ public class GetSensorDataWithGeoPostGIS {
         return s.toString();
     }
 
-    public static Connection connect(String url, String dbuser, String dbpass) throws SQLException, ClassNotFoundException {
+    public static Connection connect() throws SQLException, ClassNotFoundException {
         Connection conn;
         Class.forName("org.postgis.DriverWrapper");
-        conn = DriverManager.getConnection(url, dbuser, dbpass);
+        conn = DriverManager.getConnection(dburl, dbuser, dbpass);
         return conn;
-    }
-
-    /*
-    * Builds sensors table from list of sensors currently loaded in the system
-    * */
-    public static boolean buildGeoIndex() {
-
-        boolean success = true;
-
-        sensors = new Vector<String>();
-        coordinates = new Vector<Point>();
-
-        getListOfSensors();
-
-        Properties properties = loadProperties();
-
-        if (properties != null) {
-            try {
-                dburl = properties.getProperty("dburl");
-                dbuser = properties.getProperty("dbuser");
-                dbpass = properties.getProperty("dbpass");
-
-                Connection conn = connect(dburl, dbuser, dbpass);
-
-                //((org.postgresql.PGConnection) conn).addDataType("geometry", "org.postgis.PGgeometry");
-                //((org.postgresql.PGConnection) conn).addDataType("box3d", "org.postgis.PGbox3d");
-
-                String st_create_table = "DROP INDEX IF EXISTS gist_sensors;"
-                        + " DROP TABLE IF EXISTS sensors;"
-                        + " CREATE TABLE sensors ( \"name\" character(255) NOT NULL, \"location\" geometry NOT NULL );"
-                        + " CREATE INDEX gist_sensors ON sensors USING GIST ( location ); ";
-
-                logger.warn("Running query: " + st_create_table);
-
-                PreparedStatement prepareStatement = conn.prepareStatement(st_create_table);
-                prepareStatement.execute();
-                prepareStatement.close();
-
-                for (int i = 0; i < coordinates.size(); i++) {
-                    String insert = "insert into sensors values ( '" + sensors.get(i) + "', ST_MakePoint(" + coordinates.get(i).getX() + " , " + coordinates.get(i).getY() + " , " + coordinates.get(i).getZ() + ") );";
-                    PreparedStatement ps = conn.prepareStatement(insert);
-                    ps.execute();
-                    ps.close();
-                    logger.warn(insert);
-                }
-
-                Statement s = conn.createStatement();
-                ResultSet r = s.executeQuery("select location, name from sensors");
-                while (r.next()) {
-                    PGgeometry geom = (PGgeometry) r.getObject(1);
-                    String name = r.getString(2);
-                    logger.warn("Geometry " + geom.toString() + " : " + name);
-                }
-                s.close();
-                conn.close();
-
-            }
-            catch (SQLException e) {
-                logger.warn(e.getMessage(), e);
-                success = false;
-            }
-            catch (ClassNotFoundException e) {
-                logger.warn(e.getMessage(), e);
-                success = false;
-            }
-        } else {
-            logger.warn("Couldn't load properties files for PostGIS");
-            success = false;
-        }
-
-        return success;
-
     }
 
     public static Properties loadProperties() {
         Properties p = new Properties();
         try {
             p.load(new FileInputStream(CONF_SPATIAL_PROPERTIES_FILE));
+            if(p != null){
+                dburl = p.getProperty("dburl");
+                dbuser = p.getProperty("dbuser");
+                dbpass = p.getProperty("dbpass");
+            }
         }
         catch (IOException e) {
             p = null;
@@ -245,7 +240,7 @@ public class GetSensorDataWithGeoPostGIS {
 
         try {
 
-            Connection conn = connect(dburl, dbuser, dbpass);
+            Connection conn = connect();
 
             Statement s2 = conn.createStatement();
             ResultSet r2 = s2.executeQuery(spatial_query);
