@@ -37,6 +37,7 @@ import gsn.beans.VSensorConfig;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -67,9 +68,6 @@ public class GetSensorDataWithGeoPostGIS {
 
     private static final String NEWLINE = "\n";
     public static final String SEPARATOR = ",";
-    private static String dburl;
-    private static String dbuser;
-    private static String dbpass;
     public static final String CONF_SPATIAL_PROPERTIES_FILE = "conf/spatial.properties";
 
     protected GetSensorDataWithGeoPostGIS() {
@@ -79,7 +77,6 @@ public class GetSensorDataWithGeoPostGIS {
     public static GetSensorDataWithGeoPostGIS getInstance() { // Singleton
         if (instance == null) {
             instance = new GetSensorDataWithGeoPostGIS();
-            loadProperties();
         }
         return instance;
     }
@@ -165,6 +162,9 @@ public class GetSensorDataWithGeoPostGIS {
         catch (ClassNotFoundException e) {
             logger.warn(e.getMessage(), e);
             success = false;
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            return false;
         }
 
         return success;
@@ -203,30 +203,17 @@ public class GetSensorDataWithGeoPostGIS {
         return s.toString();
     }
 
-    public static Connection connect() throws SQLException, ClassNotFoundException {
-        Connection conn;
+    public static Connection connect() throws SQLException, ClassNotFoundException, IOException {
+        Connection conn=null;
+        Properties p = new Properties();
+        p.load(new FileInputStream(CONF_SPATIAL_PROPERTIES_FILE));
+        String dburl = p.getProperty("dburl");
+        String dbuser = p.getProperty("dbuser");
+        String dbpass = p.getProperty("dbpass");
         Class.forName("org.postgis.DriverWrapper");
         conn = DriverManager.getConnection(dburl, dbuser, dbpass);
         return conn;
     }
-
-    public static Properties loadProperties() {
-        Properties p = new Properties();
-        try {
-            p.load(new FileInputStream(CONF_SPATIAL_PROPERTIES_FILE));
-            if(p != null){
-                dburl = p.getProperty("dburl");
-                dbuser = p.getProperty("dbuser");
-                dbpass = p.getProperty("dbpass");
-            }
-        }
-        catch (IOException e) {
-            p = null;
-            logger.warn(e.getMessage(), e);
-        }
-        return p;
-    }
-
 
     /*
     * Searches for the sensors, which are contained within the specified envelope
@@ -240,7 +227,13 @@ public class GetSensorDataWithGeoPostGIS {
 
         try {
 
-            Connection conn = connect();
+            Connection conn = null;
+            try {
+                conn = connect();
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                return sensors;
+            }
 
             Statement s2 = conn.createStatement();
             ResultSet r2 = s2.executeQuery(spatial_query);

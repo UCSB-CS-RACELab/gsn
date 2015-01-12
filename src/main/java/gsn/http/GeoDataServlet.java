@@ -68,6 +68,17 @@ public class GeoDataServlet extends HttpServlet {
             String query = HttpRequestUtils.getStringParameter("query", null, request);
             String union = HttpRequestUtils.getStringParameter("union", null, request);
             String debug = HttpRequestUtils.getStringParameter("debug", null, request);
+            String getImages = HttpRequestUtils.getStringParameter("getImages", null, request);
+
+            if (getImages!= null && getImages.trim().equalsIgnoreCase("true")){
+                String lat = HttpRequestUtils.getStringParameter("lat", null, request);
+                String lon = HttpRequestUtils.getStringParameter("lon", null, request);
+                String result = "";
+                if (lat != null && lon != null) {
+                    result = PostGisImages.getImagesForLocation(Double.parseDouble(lat), Double.parseDouble(lon));
+                }
+                //response.getWriter().write("getting images for you ..." + result);
+            }
 
             if (debug!= null && debug.trim().toLowerCase().compareTo("true") == 0)
                 debugMode = true;
