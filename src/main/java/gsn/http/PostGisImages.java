@@ -26,12 +26,10 @@
 package gsn.http;
 
 import org.apache.log4j.Logger;
+import org.postgis.PGgeometry;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class PostGisImages {
     private static transient Logger logger = Logger.getLogger(PostGisImages.class);
@@ -71,18 +69,60 @@ public class PostGisImages {
             logger.warn(e.getMessage(), e);
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
+        }finally {
+            // TODO free all the resources
         }
     }
 
-    public static void query(double lat, double lon) {
-        // ST_Contains(geometry, geometry)
-        // Returns true if the first geometry fully contains the second geometry, otherwise false.
-        // SELECT url, st_contains(location, ST_GeomFromText('POINT(1.3 1.2)', 4326))  FROM images;
+    public static String query(double lat, double lon) {
+
+        Connection conn = null;
+        Statement s = null;
+        StringBuilder sb = new StringBuilder("");
+        try {
+            conn = GetSensorDataWithGeoPostGIS.connect();
+
+        s = conn.createStatement();
+            String query = "SELECT url, " +
+                    "st_contains(location, ST_GeomFromText('POINT(" + lat + " " + lon + ")', 4326))  " +
+                    "FROM images;";
+        ResultSet r = s.executeQuery(query);
+        while (r.next()) {
+            String url = (String) r.getString(1);
+            boolean contains = r.getBoolean(2);
+            logger.info("Image " + url + " : " + (contains ? "contains " : "does not contain ") + "location.");
+            sb.append("Image " + url + " : " + (contains ? "contains " : "does not contain ") + "location.\n");
+        }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            if (s != null){
+                try {
+                    s.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            if( null != conn) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    logger.error("Not able to close the connection.");
+                    e.getMessage();
+                }
+            }
+
+        }
+        return sb.toString();
     }
 
     public static String getImagesForLocation(Double lat, Double lon) {
         populate();
-        //query();
-        return "";
+        return query(lat, lon);
     }
 }

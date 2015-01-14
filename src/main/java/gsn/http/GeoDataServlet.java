@@ -77,7 +77,7 @@ public class GeoDataServlet extends HttpServlet {
                 if (lat != null && lon != null) {
                     result = PostGisImages.getImagesForLocation(Double.parseDouble(lat), Double.parseDouble(lon));
                 }
-                //response.getWriter().write("getting images for you ..." + result);
+                response.getWriter().write(result);
             }
 
             if (debug!= null && debug.trim().toLowerCase().compareTo("true") == 0)
@@ -91,7 +91,8 @@ public class GeoDataServlet extends HttpServlet {
                 useUnion = false;
 
             if (usePostGIS)
-                response.getWriter().write(runPostGIS(env, query, union));
+//                response.getWriter().write(runPostGIS(env, query, union));
+                response.getWriter().write("");
             else
                 response.getWriter().write(runJTS(env, query, union));
 
