@@ -23,8 +23,9 @@
                     <predicate key="formats">numeric,numeric,string,numeric</predicate>
                     <predicate key="bad-values">NaN,6999,-6999,null</predicate>
                     <predicate key="timezone">Etc/GMT-8</predicate>
-                    <predicate key="sampling">1000</predicate> <!-- how often to read the data file (ms)-->
+                    <predicate key="sampling">1000</predicate> <!-- how often to sleep in between reading the data file (ms)-->
                     <predicate key="check-point-directory">csv-check-points</predicate>
+                    <predicate key="use-counter-for-check-point">true</predicate>
                     <predicate key="separator">:</predicate>
                 </address>
                 <query>select * from wrapper
