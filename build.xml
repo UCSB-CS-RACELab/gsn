@@ -114,6 +114,9 @@
 
     <target name="gsn" depends="cleandb" description="Run GSN server in non graphical mode.">
         <java classname="gsn.Main" maxmemory="${maxMemoryUsage}" spawn="true" fork="true" dir="${basedir}" classpathref="classpath">
+            <!-- For debugging, uncomment the next 2 lines -->
+            <!--<jvmarg value="-Xdebug" />-->
+            <!--<jvmarg value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8003"/>-->
             <jvmarg value="-Djavax.xml.parsers.DocumentBuilderFactory=com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl"/>
             <jvmarg value="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Log4JLogger"/>
             <jvmarg value="-DmaxServlets=${max-servlets}"/>
