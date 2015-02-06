@@ -1,0 +1,48 @@
+<virtual-sensor name="pressure_bomb" priority="10" publish-to-lsm="true">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <output-structure>
+            <field name="date" type="string" />
+            <field name="field_name" type="string" />
+            <field name="point_avg" type="int" />
+            <field name="variety" type="string" />
+            <field name="name" type="int" />
+            <field name="latitude" type="string" />
+            <field name="longitude" type="string"/>
+            <field name="icon" type="int"/>
+            <field name="icon_scale" type="double"/>
+            <field name="icon_line_color" type="string"/>
+            <field name="timebegin" type="string"/>
+            <field name="timeend" type="string"/>
+        </output-structure>
+    </processing-class>
+    <description>Nichols Ranch Pressure Bomb Data</description>
+    <life-cycle pool-size="10"/>
+    <addressing>
+        <predicate key="geographical">Nichols Ranch</predicate>
+        <predicate key="LATITUDE">36.138199</predicate>
+        <predicate key="LONGITUDE">-119.384917</predicate>
+    </addressing>
+    <storage history-size="24h" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="csv">
+                    <predicate key="file">data/pressure_bomb.csv</predicate>
+                    <predicate key="fields">date,field_name,point_avg,variety,name,latitude,longitude,icon,icon_scale,icon_line_color,timebegin,timeend</predicate>
+                    <predicate key="formats">string,string,numeric,string,numeric,string,string,numeric,numeric,string,string,string</predicate>
+                    <predicate key="bad-values">NaN,6999,-6999,null</predicate>
+                    <predicate key="timezone">Etc/GMT-8</predicate>
+                    <predicate key="sampling">10000</predicate> <!-- how often to read the data file (ms)-->
+                    <predicate key="check-point-directory">csv-check-points</predicate>
+                    <predicate key="use-counter-for-check-point">true</predicate>
+                    <predicate key="skip-first-lines">1</predicate>
+                    <predicate key="separator">,</predicate>
+                </address>
+                <query>select * from wrapper
+                </query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>
