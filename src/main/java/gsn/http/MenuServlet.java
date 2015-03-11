@@ -67,7 +67,7 @@ public class MenuServlet extends HttpServlet {
         if (Main.getContainerConfig().isAcEnabled()) {
             out.println("<ul id=\"logintext\">" + displayLogin(req) + "</ul>");
         } else {
-            out.println("<ul id=\"linkWebsite\"><li><a href=\"https://github.com/LSIR/gsn/\">GSN Home</a></li></ul>");
+            out.println("<ul id=\"linkWebsite\"><li><a href=\"http://localhost:9000/\">GSN Assistant</a></li></ul>");
         }
     }
 
