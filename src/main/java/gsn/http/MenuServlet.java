@@ -67,7 +67,11 @@ public class MenuServlet extends HttpServlet {
         if (Main.getContainerConfig().isAcEnabled()) {
             out.println("<ul id=\"logintext\">" + displayLogin(req) + "</ul>");
         } else {
-            out.println("<ul id=\"linkWebsite\"><li><a href=\"http://localhost:9000/\">GSN Assistant</a></li></ul>");
+            out.println("<ul id=\"linkWebsite\"><li><a id=\"gsn-assistant\">GSN Assistant</a></li></ul>");
+            // add javascript to produce the correct URL to the gsn assistant
+            out.println("<script type=\"text/javascript\">" +
+                    "document.getElementById('gsn-assistant').href=window.location.protocol + '//' + window.location.hostname + ':9000';" +
+                    "</script>");
         }
     }
 
