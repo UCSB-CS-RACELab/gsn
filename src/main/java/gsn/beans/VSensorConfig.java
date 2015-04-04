@@ -322,20 +322,11 @@ public class VSensorConfig implements Serializable {
 	public String getStorageHistorySize ( ) {
         if (storageHistorySize == null) {
 		    if ( storage == null || storage.getStorageSize() == null || storage.getStorageSize().trim( ).equals( "" ) )
-                storageHistorySize = "0";
+                storageHistorySize = ""+STORAGE_SIZE_NOT_SET;
             else
                 storageHistorySize = storage.getStorageSize();
         }
 		return storageHistorySize;
-	}
-
-	/**
-	 * Checks whether the virtual sensor needs storage or not (checks the
-	 * variable <code>storageHistorySize</code>
-	 */
-	public boolean needsStorage ( ) {
-		if ( this.getStorageHistorySize( ).equals( "0" ) ) return false;
-		return true;
 	}
 
 	public boolean validate ( ) {
@@ -357,6 +348,9 @@ public class VSensorConfig implements Serializable {
         return storage;
     }
 
+    public void setStorage(StorageConfig sc){
+    	this.storage=sc;
+    }
     public boolean isStorageCountBased ( ) {
 		return this.isStorageCountBased;
 	}
@@ -376,6 +370,9 @@ public class VSensorConfig implements Serializable {
 		return webParameterPassword;
 	}
 
+	public void setWebParameterPassword ( String p) {
+		webParameterPassword=p;
+	}
 
 	public String toString ( ) {
 		final StringBuilder builder = new StringBuilder( "Input Stream [" );
@@ -503,6 +500,10 @@ public class VSensorConfig implements Serializable {
 		return isTimestampUnique ;
 	}
 
+	public void setIsTimeStampUnique(boolean unique){
+		this.isTimestampUnique=unique;
+	}
+	
 	public boolean isAccess_protected() {
 		try {
 		return Boolean.parseBoolean(access_protected.trim());

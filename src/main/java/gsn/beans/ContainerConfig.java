@@ -23,11 +23,13 @@
 * @author Ali Salehi
 * @author Behnaz Bostanipour
 * @author Timotee Maret
+* @author Julien Eberle
 *
 */
 
 package gsn.beans;
 
+import gsn.config.GsnConf;
 import gsn.utils.KeyValueImp;
 import gsn.utils.ValidityTools;
 
@@ -76,9 +78,9 @@ public class ContainerConfig {
 	public static final long              DEFAULT_GSN_LOG_SIZE             = 10 * 1024 * 1024;
     private static final String           DEFAULT_SSL_KEYSTORE_PWD         = "changeit";
     private static final String           DEFAULT_SSL_KEY_PWD              = "changeit";
-
+    private static final String           DEFAULT_SSL_KEYSTORE             = "conf/servertestkeystore";
 	public static final String            FIELD_NAME_gsnPortNo             = "containerPort";
-	public static final String            FIELD_NAME_zmqEnabled             = "zmqEnabled";
+	public static final String            FIELD_NAME_zmqEnabled            = "zmqEnabled";
 	public static final String            FIELD_NAME_zmqProxyPort          = "zmqProxyPort";
 	public static final String            FIELD_NAME_zmqMetaPort           = "zmqMetaPort";
 	public static final String            FIELD_NAME_webName               = "webName";
@@ -114,6 +116,7 @@ public class ContainerConfig {
     private boolean                       acEnabled                        = false;
 	private String                        sslKeyStorePassword;
 	private String                        sslKeyPassword;
+	private String						  sslKeyStore                      = DEFAULT_SSL_KEYSTORE;
     private StorageConfig                 storage ;
     private SlidingConfig                 sliding;
 	private String                        directoryLoggingLevel            = DEFAULT_LOGGING_LEVEL;
@@ -127,8 +130,34 @@ public class ContainerConfig {
 	private Properties                    gsnLog4JProperties;
 	private String                        databaseSystem;
 	private boolean                       isdatabaseSystemInitialzied      = false;
-	private String                        timeFormat                       = "";
+	protected String                      timeFormat                       = "";
 
+	public ContainerConfig(){
+		
+	}
+	
+	public ContainerConfig(String name,String author,String description,String email,
+			int port, String timeFormat, boolean zmqEnabled,int zmqProxyPort,int zmqMetaPort,
+			boolean acEnabled,int sslPort, String sslKSPass,String sslKPass, 
+			StorageConfig storage,SlidingConfig slide){
+		this.webName=name;
+		this.webAuthor=author;
+		this.webEmail=email;
+		this.webDescription=description;
+		this.containerPort=port;
+		this.timeFormat=timeFormat;
+		this.zmqEnabled=zmqEnabled;
+		this.zmqProxyPort=zmqProxyPort;
+		this.zmqMetaPort=zmqMetaPort;
+		this.acEnabled=acEnabled;
+		this.sslPort=sslPort;
+		this.sslKeyStorePassword=sslKSPass;
+		this.sslKeyPassword=sslKPass;
+		this.storage=storage;
+		this.sliding=slide;				
+				
+				
+	}
 
     public boolean isAcEnabled() {
         return acEnabled;
@@ -308,10 +337,12 @@ public class ContainerConfig {
 	}
 
 	public static ContainerConfig getConfigurationFromFile ( String containerConfigurationFileName , String gsnLog4jFile , String dirLog4jFile ) throws JiBXException , FileNotFoundException {
-		IBindingFactory bfact = BindingDirectory.getFactory( ContainerConfig.class );
+/*		IBindingFactory bfact = BindingDirectory.getFactory( ContainerConfig.class );
 		IUnmarshallingContext uctx = bfact.createUnmarshallingContext( );
 		ContainerConfig toReturn = ( ContainerConfig ) uctx.unmarshalDocument( new FileInputStream( containerConfigurationFileName ) , null );
-
+*/
+		GsnConf gsn=GsnConf.load(containerConfigurationFileName);
+		ContainerConfig toReturn = BeansInitializer.container(gsn);
 		Properties gsnLog4j = new Properties( );
 		try {
 			gsnLog4j.load( new FileInputStream( gsnLog4jFile ) );
@@ -419,6 +450,9 @@ public class ContainerConfig {
 	}
 	public String getSSLKeyPassword(){
 		return sslKeyPassword == null ? DEFAULT_SSL_KEY_PWD : sslKeyPassword;
+	}
+	public String getSSLKeystore(){
+		return sslKeyStore;
 	}
 	
 	/**

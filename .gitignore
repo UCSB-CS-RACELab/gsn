@@ -13,3 +13,6 @@ project/boot/
 virtual-sensors/*.xml
 *.db
 .idea/
+./data/
+csv-check-points/
+

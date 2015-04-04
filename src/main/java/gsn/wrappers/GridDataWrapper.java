@@ -77,7 +77,6 @@ public class GridDataWrapper extends AbstractWrapper {
     private long rate;
 
     public boolean initialize() {
-        setName(getWrapperName() + "-" + (++threadCounter));
 
         AddressBean addressBean = getActiveAddressBean();
 
@@ -290,12 +289,12 @@ public class GridDataWrapper extends AbstractWrapper {
         Arrays.sort(files);
 
         Vector<String> v = new Vector<String>();
-        logger.warn("*** found " + files.length + " files ***");
+        logger.debug("*** found " + files.length + " files ***");
         for (int i = 0; i < files.length; i++) {
             String file = files[i];
             Pattern pattern = Pattern.compile(regexFileMask);
             Matcher matcher = pattern.matcher(file);
-            logger.warn("(" + i + ") Testing... " + file);
+            logger.debug("(" + i + ") Testing... " + file);
             if (matcher.find()) {
                 String date = getTimeStampFromFileName(file, regexFileMask);
                 long epoch = strTime2Long(date, timeFormat);
