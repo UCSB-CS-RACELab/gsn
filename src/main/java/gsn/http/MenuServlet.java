@@ -64,14 +64,16 @@ public class MenuServlet extends HttpServlet {
             out.println("<li><a href=\"/gsn/MyAccessRightsManagementServlet\">access rights management</a></li>");
         }
         out.println("</ul>");
+
+        // GSN Assistant link
+        out.println("<ul id=\"linkWebsite\"><li><a id=\"gsn-assistant\">GSN Assistant</a></li></ul>");
+        // add javascript to produce the correct URL to the gsn assistant
+        out.println("<script type=\"text/javascript\">" +
+                "document.getElementById('gsn-assistant').href=window.location.protocol + '//' + window.location.hostname + ':9000';" +
+                "</script>");
+
         if (Main.getContainerConfig().isAcEnabled()) {
             out.println("<ul id=\"logintext\">" + displayLogin(req) + "</ul>");
-        } else {
-            out.println("<ul id=\"linkWebsite\"><li><a id=\"gsn-assistant\">GSN Assistant</a></li></ul>");
-            // add javascript to produce the correct URL to the gsn assistant
-            out.println("<script type=\"text/javascript\">" +
-                    "document.getElementById('gsn-assistant').href=window.location.protocol + '//' + window.location.hostname + ':9000';" +
-                    "</script>");
         }
     }
 
