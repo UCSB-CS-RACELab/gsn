@@ -5,8 +5,8 @@
             <field name="date" type="string"/>
             <field name="field_name" type="string"/>
             <field name="pb_value" type="int"/>
-            <field name="latitude" type="string"/>
-            <field name="longitude" type="string"/>
+            <field name="lat" type="double"/>
+            <field name="long" type="double"/>
             <field name="icon" type="int"/>
             <field name="iconscale" type="double"/>
             <field name="icon_line_color" type="string"/>
@@ -26,9 +26,9 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="csv">
-                    <predicate key="file">data/pressure_chamber.csv</predicate>
-                    <predicate key="fields">date,field_name,pb_value,latitude,longitude,icon,iconscale,icon_line_color,timebegin,timeend</predicate>
-                    <predicate key="formats">string,string,numeric,string,string,numeric,numeric,string,string,string</predicate>
+                    <predicate key="file">data/pc.csv</predicate>
+                    <predicate key="fields">date,field_name,pb_value,lat,long,icon,iconscale,icon_line_color,timebegin,timeend</predicate>
+                    <predicate key="formats">string,string,numeric,numeric,numeric,numeric,numeric,string,string,string</predicate>
                     <predicate key="bad-vales">NaN,6999,-6999,null</predicate>
                     <predicate key="timezone">Etc/GMT-8</predicate>
                     <predicate key="sampling">10000</predicate>
