@@ -26,7 +26,7 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="csv">
-                    <predicate key="file">data/pc.csv</predicate>
+                    <predicate key="file">data/pressure_chamber.csv</predicate>
                     <predicate key="fields">date,field_name,pb_value,lat,long,icon,iconscale,icon_line_color,timebegin,timeend</predicate>
                     <predicate key="formats">string,string,numeric,numeric,numeric,numeric,numeric,string,string,string</predicate>
                     <predicate key="bad-vales">NaN,6999,-6999,null</predicate>

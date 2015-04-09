@@ -31,4 +31,10 @@ Data file: home-energy.data
 **Note**: The stream query on this virtual sensor is customized to only select the rows where the label is equal to
 "InstantaneousDemand" (using postgres syntax). This type of customization cannot be made via the GSN-Assistant.
 
+## Pressure Chamber
 
+Sensor data from the Nichols Ranch "Pressure Chamber" device
+
+Location: Nichols Ranch, Hanford, CA
+
+Data file: pressure_chamber.csv
