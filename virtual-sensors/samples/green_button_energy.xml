@@ -10,7 +10,7 @@
     <description>SCE Green Button Energy Data</description>
     <life-cycle pool-size="10"/>
     <addressing>
-        <predicate key="geographical">Chandra Home</predicate>
+        <predicate key="geographical">Sample Home</predicate>
         <predicate key="LATITUDE">34.414912</predicate>
         <predicate key="LONGITUDE"> -119.849030</predicate>
     </addressing>
