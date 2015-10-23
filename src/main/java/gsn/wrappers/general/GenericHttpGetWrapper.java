@@ -27,6 +27,8 @@ import gsn.beans.*;
 import gsn.wrappers.*;
 import org.apache.log4j.*;
 import org.json.*;
+import java.io.*;
+import java.net.*;
 
 public class GenericHttpGetWrapper extends AbstractWrapper {
     private static int threadCounter = 0;
