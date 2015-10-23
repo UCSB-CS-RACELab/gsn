@@ -19,7 +19,7 @@
                         <source alias="source1" sampling-rate="1" storage-size="1">
                                 <address wrapper="generic-http-get">
                                         <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
-                                        <predicate key="rate">10000</predicate>
+                                        <predicate key="rate">300000</predicate>
                                 </address>
                                 <query>select * from wrapper</query>
                         </source>

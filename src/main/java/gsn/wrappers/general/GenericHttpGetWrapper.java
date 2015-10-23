@@ -17,9 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
  *
- * File: src/gsn/wrappers/general/HttpGetWrapper.java
- *
- * @author Nevena Golubovic
+ * File: src/gsn/wrappers/general/GenericHttpGetWrapper.java
  *
  */
 
@@ -30,13 +28,10 @@ import gsn.wrappers.*;
 import org.apache.log4j.*;
 import org.json.*;
 
-import java.io.*;
-import java.net.*;
-
 public class GenericHttpGetWrapper extends AbstractWrapper {
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
-    private transient final DataField[] outputStructure = new DataField[]{new DataField("data", "varchar(10000)", "JPEG image from the remote networked camera.")};
+    private transient final DataField[] outputStructure = new DataField[]{new DataField("data", "varchar(10000)", "Entire data response from the API call.")};
     private int DEFAULT_RATE = 2000;
     private String urlPath;
     private HttpURLConnection httpURLConnection;
@@ -83,9 +78,8 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
                     responseStrBuilder.append(inputStr);
                 try {
                     JSONObject jo = new JSONObject(responseStrBuilder.toString());
-                    //logger.debug("object received: " + jo.toString());
                     postStreamElement(jo.toString());
-                } catch (JSONException e) {
+                } catch (org.json.JSONException e) {
                     logger.error("JSON exception: " + e);
                 }
             } catch (InterruptedException e) {
