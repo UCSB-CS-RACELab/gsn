@@ -1,0 +1,29 @@
+<virtual-sensor name="Wunderground" priority="10">
+        <processing-class>
+                <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+                <init-params>
+                </init-params>
+                <output-structure>
+                        <field name="data" type="varchar(10000)"/>
+                </output-structure>
+        </processing-class>
+        <description>virtual sensor for Wunderground api</description>
+        <life-cycle pool-size="10" />
+        <addressing>
+                <predicate key="geographical">
+                </predicate>
+        </addressing>
+        <storage history-size="100" />
+        <streams>
+                <stream name="input1">
+                        <source alias="source1" sampling-rate="1" storage-size="1">
+                                <address wrapper="generic-http-get">
+                                        <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
+                                        <predicate key="rate">10000</predicate>
+                                </address>
+                                <query>select * from wrapper</query>
+                        </source>
+                        <query>select * from source1</query>
+                </stream>
+        </streams>
+</virtual-sensor> 
