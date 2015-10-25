@@ -23,26 +23,41 @@
 
 package gsn.wrappers.general;
 
+import com.jayway.jsonpath.*;
 import gsn.beans.*;
 import gsn.wrappers.*;
+import javafx.util.*;
+import javafx.util.Pair;
 import org.apache.log4j.*;
 import org.json.*;
+import org.json.JSONObject;
+
 import java.io.*;
+import java.io.Serializable;
+import java.lang.*;
+import java.lang.Exception;
+import java.lang.Object;
+import java.lang.String;
 import java.net.*;
+import java.util.*;
+import java.util.LinkedList;
+import java.util.List;
 
 public class GenericHttpGetWrapper extends AbstractWrapper {
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
-    private transient final DataField[] outputStructure = new DataField[]{new DataField("data", "varchar(10000)", "Entire data response from the API call.")};
-    private int DEFAULT_RATE = 2000;
+    private transient DataField[] outputStructure = null;
+    private int DEFAULT_RATE = 60*60*1000; // time in milliseconds
     private String urlPath;
-    private HttpURLConnection httpURLConnection;
+    private HttpURLConnection httpUrlConnection;
     private URL url;
     private AddressBean addressBean;
     private String inputRate;
     private int rate;
-    BufferedReader streamReader = null;
-
+    private String requestFormat;
+    private BufferedReader streamReader = null;
+    //private List<Pair<String, String>> attributes = new LinkedList<Pair<String, String>>();
+    private String attributesListString = null;
 
     public boolean initialize() {
         this.addressBean = getActiveAddressBean();
@@ -59,7 +74,17 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         } else {
             rate = Integer.parseInt(inputRate);
         }
-        logger.debug("Calling URL: " + url + " at rate: " + rate);
+        requestFormat = this.addressBean.getPredicateValue("request-format");
+        logger.debug("Calling URL: " + url + " at rate: " + rate + " and format: " + requestFormat);
+        attributesListString = this.addressBean.getPredicateValue("attributes");
+        // TODO exception handling
+        if (attributesListString != null && attributesListString.trim().length() != 0) {
+            initializeOtputStructure(attributesListString);
+        } else {
+            throw new IllegalStateException("missing attributes");
+//            outputStructure =  new DataField[]{
+//                    new DataField("data", "varchar(10000)", "Entire response from a API.")};
+        }
         return true;
     }
 
@@ -70,35 +95,77 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         while (isActive()) {
             try {
                 Thread.sleep(rate);
-                httpURLConnection = (HttpURLConnection) url.openConnection();
-                httpURLConnection.connect();
-                logger.debug("response code: " + httpURLConnection.getResponseCode());
-                streamReader = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream(), "UTF-8"));
+                httpUrlConnection = (HttpURLConnection) url.openConnection();
+                httpUrlConnection.setRequestMethod("GET");
+                httpUrlConnection.setRequestProperty("Accept", requestFormat);
+                logger.info("connecting ...");
+                httpUrlConnection.connect();
+                logger.info("response code: " + httpUrlConnection.getResponseCode());
+                streamReader = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream(), "UTF-8"));
                 StringBuilder responseStrBuilder = new StringBuilder();
                 String inputStr;
                 while ((inputStr = streamReader.readLine()) != null)
                     responseStrBuilder.append(inputStr);
                 try {
-                    JSONObject jo = new JSONObject(responseStrBuilder.toString());
-                    postStreamElement(jo.toString());
+                    String data = responseStrBuilder.toString();
+                    JSONObject jo = new JSONObject(data);
+                    Serializable[] objects = extractAttributes(data);
+                    StreamElement se = new StreamElement(outputStructure, objects);
+                    boolean posted = postStreamElement(se);
+                    logger.info("posted: " + posted);
                 } catch (org.json.JSONException e) {
-                    logger.error("JSON exception: " + e);
+                    logger.error("JSON exception.", e);
                 }
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
+            } catch (Exception e) {
+                logger.error("error ", e);
             } finally {
-                httpURLConnection.disconnect();
+                httpUrlConnection.disconnect();
                 if(streamReader != null) {
                     try {
                         streamReader.close();
                     } catch (IOException e) {
-                        logger.error("Couldn't close the stream reader: " + e);
+                        logger.error("Couldn't close the stream reader.", e);
                     }
                 }
             }
         }
+    }
+
+    private void initializeOtputStructure(String attributesListString) {
+        logger.info("initialize otputStructure");
+        String[] attr = attributesListString.split(",");
+        outputStructure = new DataField[attr.length + 1];
+        int i = 0;
+        outputStructure[i++] = new DataField("data", "varchar(10000)", "Entire response from a API.");
+        for(String s : attr) {
+            String[] row = s.split(":");
+            outputStructure[i++] = new DataField(row[0], row[1], row[2]);
+        }
+        logger.info("out str size is " + outputStructure.length);
+    }
+    // const?
+    private Serializable[] extractAttributes(String data) {
+        logger.info("extracting attributes.");
+        logger.info("data " + data);
+        //logger.info("attributes sizes " + attributes.size());
+        //int i = 0;
+        Serializable[] dataValueFields = new Serializable[outputStructure.length];
+        dataValueFields[0] = data;
+        Object document = Configuration.defaultConfiguration().jsonProvider().parse(data);
+        for(int i = 1; i < outputStructure.length; i++) {
+            try {
+                dataValueFields[i] = (Serializable) JsonPath.read(data, outputStructure[i].getDescription());
+                logger.info("field " + i + " " + dataValueFields[i]);
+            } catch (Exception e) {
+                logger.error("jayway.", e);
+            }
+        }
+        logger.info("data v f size is " + dataValueFields.length);
+        return dataValueFields;
     }
 
     public String getWrapperName() {
@@ -110,6 +177,10 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
     }
 
     public DataField[] getOutputFormat() {
+        logger.info("getOutputFormat.");
+        if (outputStructure == null) {
+            initialize();
+        }
         return outputStructure;
     }
 
