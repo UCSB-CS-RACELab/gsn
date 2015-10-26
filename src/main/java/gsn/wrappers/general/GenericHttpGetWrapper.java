@@ -47,7 +47,7 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
     private transient DataField[] outputStructure = null;
-    private int DEFAULT_RATE = 60*60*1000; // time in milliseconds
+    private int DEFAULT_RATE = 60 * 60 * 1000; // time in milliseconds
     private String urlPath;
     private HttpURLConnection httpUrlConnection;
     private URL url;
@@ -56,7 +56,6 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
     private int rate;
     private String requestFormat;
     private BufferedReader streamReader = null;
-    //private List<Pair<String, String>> attributes = new LinkedList<Pair<String, String>>();
     private String attributesListString = null;
 
     public boolean initialize() {
@@ -77,21 +76,17 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         requestFormat = this.addressBean.getPredicateValue("request-format");
         logger.debug("Calling URL: " + url + " at rate: " + rate + " and format: " + requestFormat);
         attributesListString = this.addressBean.getPredicateValue("attributes");
-        // TODO exception handling
         if (attributesListString != null && attributesListString.trim().length() != 0) {
             initializeOtputStructure(attributesListString);
         } else {
-            throw new IllegalStateException("missing attributes");
-//            outputStructure =  new DataField[]{
-//                    new DataField("data", "varchar(10000)", "Entire response from a API.")};
+            //    throw new IllegalStateException("missing attributes");
+            outputStructure = new DataField[]{
+                    new DataField("data", "varchar(10000)", "Entire response from a API.")};
         }
         return true;
     }
 
     public void run() {
-        ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream(1024 * 20);
-        byte[] buffer = new byte[16 * 1024];
-        BufferedInputStream content;
         while (isActive()) {
             try {
                 Thread.sleep(rate);
@@ -104,27 +99,22 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
                 streamReader = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream(), "UTF-8"));
                 StringBuilder responseStrBuilder = new StringBuilder();
                 String inputStr;
-                while ((inputStr = streamReader.readLine()) != null)
+                while ((inputStr = streamReader.readLine()) != null) {
                     responseStrBuilder.append(inputStr);
-                try {
-                    String data = responseStrBuilder.toString();
-                    JSONObject jo = new JSONObject(data);
-                    Serializable[] objects = extractAttributes(data);
-                    StreamElement se = new StreamElement(outputStructure, objects);
-                    boolean posted = postStreamElement(se);
-                    logger.info("posted: " + posted);
-                } catch (org.json.JSONException e) {
-                    logger.error("JSON exception.", e);
                 }
+                String data = responseStrBuilder.toString();
+                Serializable[] objects = extractAttributes(data);
+                StreamElement se = new StreamElement(outputStructure, objects);
+                postStreamElement(se);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
             } catch (Exception e) {
-                logger.error("error ", e);
+                logger.error(e.getMessage(), e);
             } finally {
                 httpUrlConnection.disconnect();
-                if(streamReader != null) {
+                if (streamReader != null) {
                     try {
                         streamReader.close();
                     } catch (IOException e) {
@@ -136,32 +126,31 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
     }
 
     private void initializeOtputStructure(String attributesListString) {
-        logger.info("initialize otputStructure");
+        logger.info("initialize otput structure");
         String[] attr = attributesListString.split(",");
         outputStructure = new DataField[attr.length + 1];
         int i = 0;
         outputStructure[i++] = new DataField("data", "varchar(10000)", "Entire response from a API.");
-        for(String s : attr) {
+        for (String s : attr) {
             String[] row = s.split(":");
             outputStructure[i++] = new DataField(row[0], row[1], row[2]);
         }
-        logger.info("out str size is " + outputStructure.length);
+        logger.debug("out str size is " + outputStructure.length);
     }
+
     // const?
     private Serializable[] extractAttributes(String data) {
         logger.info("extracting attributes.");
         logger.info("data " + data);
-        //logger.info("attributes sizes " + attributes.size());
-        //int i = 0;
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
         dataValueFields[0] = data;
         Object document = Configuration.defaultConfiguration().jsonProvider().parse(data);
-        for(int i = 1; i < outputStructure.length; i++) {
+        for (int i = 1; i < outputStructure.length; i++) {
             try {
                 dataValueFields[i] = (Serializable) JsonPath.read(data, outputStructure[i].getDescription());
-                logger.info("field " + i + " " + dataValueFields[i]);
+                logger.debug("field " + i + " " + dataValueFields[i]);
             } catch (Exception e) {
-                logger.error("jayway.", e);
+                logger.error(e.getMessage(), e);
             }
         }
         logger.info("data v f size is " + dataValueFields.length);
@@ -183,5 +172,4 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         }
         return outputStructure;
     }
-
 }
