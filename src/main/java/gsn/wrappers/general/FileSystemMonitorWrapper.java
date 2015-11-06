@@ -66,29 +66,23 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
 
     class FyleSystemListener implements FileListener {
         public void fileChanged(FileChangeEvent event) {
-            FileObject changedFile = event.getFile();
-            String fileName = changedFile.getName().toString();
-            logger.info("changed " + fileName);
-            StreamElement se = new StreamElement(dataField, new Serializable[]{
-                    fileName, System.currentTimeMillis(), "changed"});
-            postStreamElement(se);
+            recordEvent(event, "changed");
         }
 
         public void fileCreated(FileChangeEvent event) {
-            FileObject changedFile = event.getFile();
-            String fileName = changedFile.getName().toString();
-            logger.info("created " + fileName);
-            StreamElement se = new StreamElement(dataField, new Serializable[]{
-                    fileName, System.currentTimeMillis(), "created"});
-            postStreamElement(se);
+            recordEvent(event, "created");
         }
 
         public void fileDeleted(FileChangeEvent event) {
+            recordEvent(event, "deleted");
+        }
+
+        private void recordEvent(FileChangeEvent event, String opertionType) {
             FileObject changedFile = event.getFile();
             String fileName = changedFile.getName().toString();
-            logger.info("deleted " + fileName);
+            logger.info(opertionType + " " + fileName);
             StreamElement se = new StreamElement(dataField, new Serializable[]{
-                    fileName, System.currentTimeMillis(), "deleted"});
+                    fileName, System.currentTimeMillis(), opertionType});
             postStreamElement(se);
         }
     }
