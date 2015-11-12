@@ -20,8 +20,8 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="fs-monitor">
-                    <!-- uncomment and update the line below with the path to the gsn folder. -->
-                    <predicate key="folder">/Users/nevena/projects/idea/gsn</predicate>
+                    <!-- update the line below with the path to the gsn folder. -->
+                    <predicate key="folder">/path/to/gsn</predicate>
                     <predicate key="pattern">.*gsn/[^/]*</predicate>
                     <predicate key="sampling-rate">2000</predicate>
                 </address>
