@@ -30,8 +30,16 @@ import org.apache.commons.vfs2.*;
 import org.apache.commons.vfs2.impl.DefaultFileMonitor;
 import org.apache.commons.vfs2.provider.local.LocalFile;
 import org.apache.log4j.Logger;
-import java.io.*;
 
+import java.io.*;
+import java.lang.*;
+import java.util.regex.Pattern;
+
+/**
+ * Wrapper that monitors for any changed files in the directory specified in
+ * the VSD XML file under the "folder" attribute. Changes are recorded in the
+ * database as "created", "changed", "deleted", together with the file path.
+ */
 public class FileSystemMonitorWrapper extends AbstractWrapper {
     private static final int rate = 1000;
     private static DataField[] dataField = new DataField[]{
@@ -42,6 +50,7 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
     private final transient Logger logger = Logger.getLogger(FileSystemMonitorWrapper.class);
     private int threadCounter = 0;
     private AddressBean addressBean;
+    private Pattern pattern = null;
 
     public boolean initialize() {
         this.addressBean = getActiveAddressBean();
@@ -49,6 +58,7 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
             FileSystemManager manager = VFS.getManager();
             DefaultFileMonitor fm = new DefaultFileMonitor(new FyleSystemListener());
             String folder = this.addressBean.getPredicateValue("folder");
+            pattern = Pattern.compile(this.addressBean.getPredicateValue("pattern"));
             FileObject file = manager.resolveFile(folder);
             fm.setDelay(rate);
             fm.addFile(file);
@@ -60,8 +70,6 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
     }
 
     public void run() {
-        while (isActive()) {
-        }
     }
 
     class FyleSystemListener implements FileListener {
@@ -80,10 +88,13 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
         private void recordEvent(FileChangeEvent event, String opertionType) {
             FileObject changedFile = event.getFile();
             String fileName = changedFile.getName().toString();
-            logger.info(opertionType + " " + fileName);
-            StreamElement se = new StreamElement(dataField, new Serializable[]{
-                    fileName, System.currentTimeMillis(), opertionType});
-            postStreamElement(se);
+            logger.debug("filename: " + fileName);
+            if (pattern.matcher(fileName).matches()) {
+                logger.debug(opertionType + " " + fileName);
+                StreamElement se = new StreamElement(dataField, new Serializable[]{
+                        fileName, System.currentTimeMillis(), opertionType});
+                postStreamElement(se);
+            }
         }
     }
 
@@ -98,5 +109,4 @@ public class FileSystemMonitorWrapper extends AbstractWrapper {
     public void dispose() {
         threadCounter--;
     }
-
 }

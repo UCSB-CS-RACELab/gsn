@@ -15,16 +15,17 @@
         <predicate key="LATITUDE">37.5419</predicate>
         <predicate key="LONGITUDE">-122.1419</predicate>
     </addressing>
-    <storage history-size="100" />
+    <storage history-size="10" />
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="fs-monitor">
                     <!-- uncomment and update the line below with the path to the gsn folder. -->
-                    <!-- <predicate key="folder">/Users/name/gsn</predicate> -->
-                    <predicate key="sampling-rate">1000</predicate>
+                    <predicate key="folder">/Users/nevena/projects/idea/gsn</predicate>
+                    <predicate key="pattern">.*gsn/[^/]*</predicate>
+                    <predicate key="sampling-rate">2000</predicate>
                 </address>
-                <query>select * from wrapper</query>
+                <query>select * from wrapper where filepath not like '%/.%'</query>
             </source>
             <query>select * from source1</query>
         </stream>
