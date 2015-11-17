@@ -1,14 +1,15 @@
-<virtual-sensor name="CombinedStreams" priority="11">
+<virtual-sensor name="CombinedSources" priority="11">
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <output-structure>
             <field name="HEAP" type="double" unit="tri"/>
+            <field name="clock" type="double" />
         </output-structure>
 
     </processing-class>
-    <description>This sensor combines two different streams to produce the HEAP measurement result.
-        It uses the same wrapper, repeating the value but it can use different wrapper as long as the
-        select query produces the same StreamElement.
+    <description>This sensor combines two different sources to produce the combined result
+        taking heap value form one and clock value from the other wrapper
+        combining them into one StreamElement.
     </description>
     <life-cycle pool-size="10" />
     <addressing>
@@ -21,23 +22,17 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="memory-usage">
-                    <predicate key="sampling-rate">20000</predicate>
+                    <predicate key="sampling-rate">1000</predicate>
                 </address>
                 <query>select HEAP from wrapper</query>
             </source>
-            <query>select * from source1</query>
-        </stream>
-        <stream name="input2">
             <source alias="source2" sampling-rate="1" storage-size="1">
-                <address wrapper="memory-usage">
-                    <predicate key="sampling-rate">10000</predicate>
+                <address wrapper="system-time">
+                    <predicate key="clock-period">1000</predicate> <!-- The rate at which the wrapper produces the new element for the current time -->
                 </address>
-                <query>select HEAP from wrapper</query>
+                <query>select timed as clock from wrapper</query>
             </source>
-            <query>select * from source2</query>
+            <query>select source1.HEAP,source2.clock from source1,source2</query>
         </stream>
     </streams>
 </virtual-sensor>
-
-
-
