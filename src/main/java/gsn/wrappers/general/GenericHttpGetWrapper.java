@@ -39,34 +39,36 @@ import java.lang.Exception;
 import java.lang.Object;
 import java.lang.String;
 import java.net.*;
+import java.text.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
 public class GenericHttpGetWrapper extends AbstractWrapper {
+    private static final int DEFAULT_RATE = 60 * 60 * 10000; // time in milliseconds
+    private static final int TWO_DAYS = 48*3600*1000; // two days in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
     private transient DataField[] outputStructure = null;
-    private int DEFAULT_RATE = 60 * 60 * 1000; // time in milliseconds
+
     private String urlPath;
     private HttpURLConnection httpUrlConnection;
     private URL url;
     private AddressBean addressBean;
     private String inputRate;
     private int rate;
-    private String requestFormat;
+    private String requestFormat = null;
+    private String requestParemeters = null;
+    private String rateDynamic = null;
     private BufferedReader streamReader = null;
     private String attributesListString = null;
 
     public boolean initialize() {
         this.addressBean = getActiveAddressBean();
         urlPath = this.addressBean.getPredicateValue("url");
-        try {
-            url = new URL(urlPath);
-        } catch (MalformedURLException e) {
-            logger.error("Loading the http wrapper failed : " + e.getMessage(), e);
-            return false;
-        }
+
         inputRate = this.addressBean.getPredicateValue("rate");
         if (inputRate == null || inputRate.trim().length() == 0) {
             rate = DEFAULT_RATE;
@@ -74,14 +76,38 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
             rate = Integer.parseInt(inputRate);
         }
         requestFormat = this.addressBean.getPredicateValue("request-format");
-        logger.debug("Calling URL: " + url + " at rate: " + rate + " and format: " + requestFormat);
+        requestParemeters = this.addressBean.getPredicateValue("request-parameters");
+        if(requestParemeters != null && requestParemeters.trim().length() != 0) {
+            // TODO check for URL builder class
+            urlPath = urlPath + requestParemeters;
+        }
+        rateDynamic = this.addressBean.getPredicateValue("rate-dynamic");
+        if(rateDynamic != null && rateDynamic.trim().length() != 0) {
+            if(rateDynamic.equalsIgnoreCase("daily")){
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Calendar cal = Calendar.getInstance();
+                String date = sdf.format(cal.getTime().getTime() - TWO_DAYS);
+                logger.info("date: " + date);
+                urlPath = urlPath + "&startDate=" + date + "&endDate=" + date;
+            } else {
+                // TODO handle hourly calls
+            }
+        }
+
         attributesListString = this.addressBean.getPredicateValue("attributes");
-        if (attributesListString != null && attributesListString.trim().length() != 0) {
+        if(attributesListString != null && attributesListString.trim().length() != 0) {
             initializeOtputStructure(attributesListString);
         } else {
             //    throw new IllegalStateException("missing attributes");
             outputStructure = new DataField[]{
                     new DataField("data", "varchar(10000)", "Entire response from a API.")};
+        }
+        try {
+            logger.info("calling url: " + urlPath);
+            url = new URL(urlPath);
+        } catch (MalformedURLException e) {
+            logger.error("Loading the http wrapper failed : " + e.getMessage(), e);
+            return false;
         }
         return true;
     }
@@ -138,8 +164,7 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         logger.debug("out str size is " + outputStructure.length);
     }
 
-    // const?
-    private Serializable[] extractAttributes(String data) {
+    private Serializable[] extractAttributes(final String data) {
         logger.info("extracting attributes.");
         logger.info("data " + data);
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
@@ -148,8 +173,9 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         for (int i = 1; i < outputStructure.length; i++) {
             try {
                 dataValueFields[i] = (Serializable) JsonPath.read(data, outputStructure[i].getDescription());
-                logger.debug("field " + i + " " + dataValueFields[i]);
+                logger.info("field " + i + " " + dataValueFields[i]);
             } catch (Exception e) {
+                dataValueFields[i] = "not found";
                 logger.error(e.getMessage(), e);
             }
         }
