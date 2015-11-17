@@ -47,10 +47,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class GenericHttpGetWrapper extends AbstractWrapper {
+    private static final int DEFAULT_RATE = 60 * 60 * 10000; // time in milliseconds
+    private static final int TWO_DAYS = 48*3600*1000; // two days in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
     private transient DataField[] outputStructure = null;
-    private int DEFAULT_RATE = 60 * 60 * 1000; // time in milliseconds
+
     private String urlPath;
     private HttpURLConnection httpUrlConnection;
     private URL url;
@@ -74,7 +76,6 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
             rate = Integer.parseInt(inputRate);
         }
         requestFormat = this.addressBean.getPredicateValue("request-format");
-        logger.debug("Calling URL: " + url + " at rate: " + rate + " and format: " + requestFormat);
         requestParemeters = this.addressBean.getPredicateValue("request-parameters");
         if(requestParemeters != null && requestParemeters.trim().length() != 0) {
             // TODO check for URL builder class
@@ -83,11 +84,10 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         rateDynamic = this.addressBean.getPredicateValue("rate-dynamic");
         if(rateDynamic != null && rateDynamic.trim().length() != 0) {
             if(rateDynamic.equalsIgnoreCase("daily")){
-                SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-DD");
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 Calendar cal = Calendar.getInstance();
-                String date = sdf.format(cal.getTime());
-                // TODO check why is there an additional 0 at the end of the date
-                date = "2015-10-25";
+                String date = sdf.format(cal.getTime().getTime() - TWO_DAYS);
+                logger.info("date: " + date);
                 urlPath = urlPath + "&startDate=" + date + "&endDate=" + date;
             } else {
                 // TODO handle hourly calls
@@ -103,6 +103,7 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
                     new DataField("data", "varchar(10000)", "Entire response from a API.")};
         }
         try {
+            logger.info("calling url: " + urlPath);
             url = new URL(urlPath);
         } catch (MalformedURLException e) {
             logger.error("Loading the http wrapper failed : " + e.getMessage(), e);
@@ -163,8 +164,7 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         logger.debug("out str size is " + outputStructure.length);
     }
 
-    // const?
-    private Serializable[] extractAttributes(String data) {
+    private Serializable[] extractAttributes(final String data) {
         logger.info("extracting attributes.");
         logger.info("data " + data);
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
@@ -173,8 +173,9 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         for (int i = 1; i < outputStructure.length; i++) {
             try {
                 dataValueFields[i] = (Serializable) JsonPath.read(data, outputStructure[i].getDescription());
-                logger.debug("field " + i + " " + dataValueFields[i]);
+                logger.info("field " + i + " " + dataValueFields[i]);
             } catch (Exception e) {
+                dataValueFields[i] = "not found";
                 logger.error(e.getMessage(), e);
             }
         }
