@@ -1,0 +1,31 @@
+<virtual-sensor name="WundergroundJson" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="data" type="varchar(10000)"/>
+
+        </output-structure>
+    </processing-class>
+    <description>Virtual sensor for Wunderground api with Json flattener</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
+                    <predicate key="rate">60000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select data from wrapper</query>
+            </source>
+            <query>select data from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>
