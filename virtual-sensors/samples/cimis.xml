@@ -1,17 +1,19 @@
-<virtual-sensor name="CIMIS" priority="10">
+<virtual-sensor name="cimis" priority="10">
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <init-params>
         </init-params>
         <output-structure>
-            <field name="data" type="varchar(10000)"/>
             <field name="dayairtmpavg" type="varchar(100)" />
-            <field name="daywindspdavg" type="varchar(100)" />
             <field name="dayrelhumavg" type="varchar(100)" />
-            <field name="hlyairtmp" type="varchar(100)" />
+            <field name="daywindspdavg" type="varchar(100)" />
+            <field name="dayvappresavg" type="varchar(100)" />
+            <field name="daysolradavg" type="varchar(100)" />
+            <field name="daysolradnet" type="varchar(100)" />
+            <field name="data" type="varchar(10000)"/>
         </output-structure>
     </processing-class>
-    <description>virtual sensor for CIMIS api</description>
+    <description>virtual sensor for CIMIS api. Needs the CIMIS API key below</description>
     <life-cycle pool-size="10" />
     <addressing>
         <predicate key="geographical">
@@ -23,12 +25,8 @@
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="generic-http-get">
                     <predicate key="url">http://et.water.ca.gov/api/data</predicate>
-                    <predicate key="request-parameters">?appKey=YOUR-APP_KEY&amp;targets=93117&amp;dataItems=day-air-tmp-avg,day-wind-spd-avg,day-rel-hum-avg</predicate>
-                    <predicate key="attributes">dayairtmpavg:varchar(100):$.Data.Providers.[0].Records.[0].DayAirTmpAvg.Value,daywindspdavg:varchar(100):$.Data.Providers.[0].Records.[0].DayWindSpdAvg.Value,dayrelhumavg:varchar(100):$.Data.Providers[0].Records[0].DayRelHumAvg.Value</predicate>
-                        <!-- any element in the json array except first is hourly -->
-                        <!-- hly-air-tmp:varchar(100):$.Data.Providers[0].Records[*].HlyAirTmp.Value, -->
-                    <!-- use this in the case of down time predicate key="checkpoint-file"></predicate -->
-                    <!-- predicate key="rate-dynamic">hourly</predicate -->
+                    <predicate key="request-parameters">?appKey=YOUR-API-KEY&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net</predicate>
+                    <predicate key="attributes">dayairtmpavg:varchar(100):$.Data.Providers.[0].Records.[0].DayAirTmpAvg.Value,dayrelhumavg:varchar(100):$.Data.Providers[0].Records[0].DayRelHumAvg.Value,daywindspdavg:varchar(100):$.Data.Providers.[0].Records.[0].DayWindSpdAvg.Value,dayvappresavg:varchar(100):$.Data.Providers.[0].Records.[0].DayVapPresAvg.Value,daysolradavg:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadAvg.Value,daysolradnet:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadNet.Value</predicate>
                     <predicate key="rate-dynamic">daily</predicate>
                     <predicate key="rate">6000</predicate>
                     <predicate key="request-format">application/json; charset=utf-8</predicate>
