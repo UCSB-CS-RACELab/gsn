@@ -26,8 +26,6 @@ package gsn.wrappers.general;
 import com.jayway.jsonpath.*;
 import gsn.beans.*;
 import gsn.wrappers.*;
-import javafx.util.*;
-import javafx.util.Pair;
 import org.apache.log4j.*;
 import org.json.*;
 import org.json.JSONObject;
@@ -47,7 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class GenericHttpGetWrapper extends AbstractWrapper {
-    private static final int DEFAULT_RATE = 60 * 60 * 10000; // time in milliseconds
+    private static final int DEFAULT_RATE = 10000; // time in milliseconds
     private static final int TWO_DAYS = 48*3600*1000; // two days in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
