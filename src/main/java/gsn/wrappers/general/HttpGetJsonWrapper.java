@@ -28,8 +28,6 @@ import com.jayway.jsonpath.*;
 import gsn.beans.*;
 import gsn.wrappers.*;
 import gsn.utils.JsonFlattener;
-import javafx.util.*;
-import javafx.util.Pair;
 import org.apache.log4j.*;
 import org.json.*;
 import org.json.JSONObject;
@@ -50,7 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class HttpGetJsonWrapper extends AbstractWrapper {
-    private static final int DEFAULT_RATE = 100000; // time in milliseconds
+    private static final int DEFAULT_RATE = 20000; // time in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetJsonWrapper.class);
     private transient DataField[] outputStructure = null;
