@@ -13,7 +13,7 @@
             <field name="data" type="varchar(10000)"/>
         </output-structure>
     </processing-class>
-    <description>virtual sensor for CIMIS api. Needs the CIMIS API key below</description>
+    <description>Virtual sensor for CIMIS api. Needs the CIMIS API key.</description>
     <life-cycle pool-size="10" />
     <addressing>
         <predicate key="geographical">
@@ -28,7 +28,7 @@
                     <predicate key="request-parameters">?appKey=YOUR-API-KEY&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net</predicate>
                     <predicate key="attributes">dayairtmpavg:varchar(100):$.Data.Providers.[0].Records.[0].DayAirTmpAvg.Value,dayrelhumavg:varchar(100):$.Data.Providers[0].Records[0].DayRelHumAvg.Value,daywindspdavg:varchar(100):$.Data.Providers.[0].Records.[0].DayWindSpdAvg.Value,dayvappresavg:varchar(100):$.Data.Providers.[0].Records.[0].DayVapPresAvg.Value,daysolradavg:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadAvg.Value,daysolradnet:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadNet.Value</predicate>
                     <predicate key="rate-dynamic">daily</predicate>
-                    <predicate key="rate">6000</predicate>
+                    <predicate key="rate">60000</predicate>
                     <predicate key="request-format">application/json; charset=utf-8</predicate>
 
                 </address>

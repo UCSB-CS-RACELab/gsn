@@ -49,6 +49,8 @@ import java.util.List;
 
 public class HttpGetJsonWrapper extends AbstractWrapper {
     private static final int DEFAULT_RATE = 20000; // time in milliseconds
+    private static final int TWO_DAYS = 48*3600*1000; // two days in milliseconds
+    private static final int ONE_DAY = 24*3600*1000; // one day in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetJsonWrapper.class);
     private transient DataField[] outputStructure = null;
@@ -67,23 +69,38 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
 
     public boolean initialize() {
         this.addressBean = getActiveAddressBean();
+        inputRate = this.addressBean.getPredicateValue( "rate" );
+        if ( inputRate == null || inputRate.trim( ).length( ) == 0 ) {
+            rate = DEFAULT_RATE;
+        }
+        else {
+            rate = Integer.parseInt(inputRate);
+        }
         urlPath = this.addressBean.getPredicateValue("url");
         requestFormat = this.addressBean.getPredicateValue("request-format");
         requestParemeters = this.addressBean.getPredicateValue("request-parameters");
         if (requestParemeters != null && requestParemeters.trim().length() != 0) {
-            // TODO check for URL builder class
+            // TODO replace with URL builder class
             urlPath = urlPath + requestParemeters;
         }
+        rateDynamic = this.addressBean.getPredicateValue("rate-dynamic");
+        if(rateDynamic != null && rateDynamic.trim().length() != 0) {
+            if(rateDynamic.equalsIgnoreCase("daily")){
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                Calendar cal = Calendar.getInstance();
+                String date = sdf.format(cal.getTime().getTime() - TWO_DAYS);
+                logger.info("date: " + date);
+                urlPath = urlPath + "&startDate=" + date + "&endDate=" + date;
+            } else {
+                // TODO handle hourly calls
+            }
+        }
         try {
-            Thread.sleep(10000);
             logger.info("calling url: " + urlPath);
             url = new URL(urlPath);
         } catch (MalformedURLException e) {
             logger.error("Loading the http wrapper failed : " + e.getMessage(), e);
             return false;
-        } catch (Exception e) {
-            logger.error("Err: " + e);
-            // remove sleep
         }
         // call the API and get the JSON structure from it.
         // Flatten it and initialize the OutputStructure.
@@ -140,7 +157,7 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
                 Serializable[] objects = extractAttributes(data);
                 StreamElement se = new StreamElement(outputStructure, objects);
                 postStreamElement(se);
-                Thread.sleep(DEFAULT_RATE);
+                Thread.sleep(rate);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
@@ -161,7 +178,6 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
     }
 
     private void extractAttributesForOutputStructure(final String data) {
-
         int j = 0;
         try {
             String s = JsonFlattener.encode(data).replace("{", "").replace("}", "").replace("\"", "");
@@ -181,11 +197,11 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
             }
             outputStructure = new DataField[j];
             for (int k = 0; k < j - 1; k++) {
-                String name = "_" + jsonPathsFiledNames[k].replace("$","").replace(".","__");
+                String name = "_" + jsonPathsFiledNames[k].replaceAll("[\\.\\[\\$\\]]","__");
                 outputStructure[k] = new DataField(name.toUpperCase(), jsonFieldTypes[k], jsonPathsFiledNames[k]);
                 logger.info("outputStructure: name: " + jsonPathsFiledNames[k] + " *** type: " + jsonFieldTypes[k]);
             }
-            outputStructure[j - 1] = new DataField("data", "varchar(10000)", "Entire response from a API.");
+            outputStructure[j - 1] = new DataField("data", "varchar(100000)", "Entire response from a API.");
         } catch (JSONException e) {
             logger.error("JsonE: ", e);
         }
@@ -199,9 +215,9 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
         for (int i = 0; i < outputStructure.length - 1; i++) {
             try {
                 String str = outputStructure[i].getDescription().replace("\"", "");
-                logger.info("Extracting: " + str + " of type: " + outputStructure[i].getType());
+                logger.debug("Extracting: " + str + " of type: " + outputStructure[i].getType());
                 dataValueFields[i] = (Serializable) JsonPath.read(data, str);
-                logger.info("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
+                logger.debug("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
             } catch (Exception e) {
                 dataValueFields[i] = "not found";
                 logger.error(e.getMessage(), e);
@@ -233,14 +249,11 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
         logger.debug("clas name: " + className);
         if (className.equalsIgnoreCase("java.lang.Integer")) {
             dataType = "Integer";
-
         } else if (className.equalsIgnoreCase("java.lang.Double")) {
             dataType = "Double";
-
         } else if (className.equalsIgnoreCase("java.lang.String")) {
             // dataType = DataTypes.VARCHAR_NAME;
             dataType = "varchar(100)";
-
         }
         logger.debug("type: " + dataType);
         return dataType;
