@@ -1,0 +1,43 @@
+<virtual-sensor name="cimisEtDaily" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="provider" type="varchar(10000)"/>
+            <field name="station" type="varchar(10000)"/>
+            <field name="day_air_tmp_avg" type="varchar(10000)"/>
+            <field name="scope" type="varchar(10000)"/>
+            <field name="day_sol_rad_avg" type="varchar(10000)"/>
+            <field name="day_wind_spd_avg" type="varchar(10000)"/>
+            <field name="day_vap_res_avg" type="varchar(10000)"/>
+            <field name="date" type="varchar(10000)"/>
+            <field name="day_rel_hum_avg" type="varchar(10000)"/>
+            <field name="day_of_year" type="varchar(10000)"/>
+            <field name="zip_codes" type="varchar(10000)"/>
+        </output-structure>
+    </processing-class>
+    <description>virtual sensor for CIMIS api. Needs the CIMIS API key below</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net</predicate>
+                    <predicate key="attributes"></predicate>
+                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="rate">60000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select _____data__providers__0____owner as provider , _____data__providers__0____records__0____station as station, _____data__providers__0____records__0____dayairtmpavg__value as day_air_tmp_avg, _____data__providers__0____records__0____scope as scope, _____data__providers__0____records__0____daysolradavg__value as day_sol_rad_avg, _____data__providers__0____records__0____daywindspdavg__value as day_wind_spd_avg , _____data__providers__0____records__0____dayvappresavg__value as day_vap_res_avg, _____data__providers__0____records__0____date as date ,  _____data__providers__0____records__0____dayrelhumavg__value as day_rel_hum_avg, _____data__providers__0____records__0____julian as day_of_year , _____data__providers__0____records__0____zipcodes as zip_codes from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

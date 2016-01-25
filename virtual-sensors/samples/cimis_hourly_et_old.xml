@@ -1,0 +1,72 @@
+<virtual-sensor name="cimisJsonHourlyEt" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="_____data__providers__0____owner" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlyrelhum__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlyvappres__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hour" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____standard" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlywinddir__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____date" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____station" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____scope" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlyairtmp__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlydewpnt__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlyprecip__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlywindspd__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlyreswind__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlysolrad__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____hlysoiltmp__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____julian" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__0____zipcodes" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlyrelhum__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlyvappres__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hour" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____standard" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlywinddir__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____date" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____station" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____scope" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlyairtmp__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlydewpnt__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlyprecip__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlywindspd__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlyreswind__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlysolrad__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____hlysoiltmp__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____julian" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__1____zipcodes" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__2____hlyrelhum__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__2____hlyvappres__value" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__2____hour" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__2____standard" type="varchar(100)"/>
+            <field name="_____data__providers__0____records__2____hlywinddir__value" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>virtual sensor for CIMIS api. Hourly. Needs the CIMIS API key below</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd</predicate>
+                    <predicate key="attributes"></predicate>
+                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="rate">60000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select _____data__providers__0____owner ,  _____data__providers__0____records__0____hlyrelhum__value ,  _____data__providers__0____records__0____hlyvappres__value ,  _____data__providers__0____records__0____hour ,  _____data__providers__0____records__0____standard ,  _____data__providers__0____records__0____hlywinddir__value ,  _____data__providers__0____records__0____date ,  _____data__providers__0____records__0____station ,  _____data__providers__0____records__0____scope ,  _____data__providers__0____records__0____hlyairtmp__value ,  _____data__providers__0____records__0____hlydewpnt__value ,  _____data__providers__0____records__0____hlyprecip__value ,  _____data__providers__0____records__0____hlywindspd__value ,  _____data__providers__0____records__0____hlyreswind__value ,  _____data__providers__0____records__0____hlysolrad__value ,  _____data__providers__0____records__0____hlysoiltmp__value ,  _____data__providers__0____records__0____julian ,  _____data__providers__0____records__0____zipcodes ,  _____data__providers__0____records__1____hlyrelhum__value ,  _____data__providers__0____records__1____hlyvappres__value ,  _____data__providers__0____records__1____hour ,  _____data__providers__0____records__1____standard ,  _____data__providers__0____records__1____hlywinddir__value ,  _____data__providers__0____records__1____date ,  _____data__providers__0____records__1____station ,  _____data__providers__0____records__1____scope ,  _____data__providers__0____records__1____hlyairtmp__value ,  _____data__providers__0____records__1____hlydewpnt__value ,  _____data__providers__0____records__1____hlyprecip__value ,  _____data__providers__0____records__1____hlywindspd__value ,  _____data__providers__0____records__1____hlyreswind__value ,  _____data__providers__0____records__1____hlysolrad__value ,  _____data__providers__0____records__1____hlysoiltmp__value ,  _____data__providers__0____records__1____julian ,  _____data__providers__0____records__1____zipcodes ,  _____data__providers__0____records__2____hlyrelhum__value ,  _____data__providers__0____records__2____hlyvappres__value ,  _____data__providers__0____records__2____hour ,  _____data__providers__0____records__2____standard ,  _____data__providers__0____records__2____hlywinddir__value ,  _____data__providers__0____records__2____date ,  _____data__providers__0____records__2____station ,  _____data__providers__0____records__2____scope ,  _____data__providers__0____records__2____hlyairtmp__value ,  _____data__providers__0____records__2____hlydewpnt__value ,  _____data__providers__0____records__2____hlyprecip__value ,  _____data__providers__0____records__2____hlywindspd__value ,  _____data__providers__0____records__2____hlyreswind__value ,  _____data__providers__0____records__2____hlysolrad__value ,  _____data__providers__0____records__2____hlysoiltmp__value ,  _____data__providers__0____records__2____julian ,  _____data__providers__0____records__2____zipcodes ,  _____data__providers__0____records__3____hlyrelhum__value ,  _____data__providers__0____records__3____hlyvappres__value ,  _____data__providers__0____records__3____hour ,  _____data__providers__0____records__3____standard from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

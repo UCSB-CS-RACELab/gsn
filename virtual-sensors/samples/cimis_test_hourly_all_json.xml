@@ -1,0 +1,33 @@
+<virtual-sensor name="cimisJsonAllHourly" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="data" type="varchar(100000)"/>
+        </output-structure>
+    </processing-class>
+    <description>virtual sensor for CIMIS api. Hourly. Needs the CIMIS API key below</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd</predicate>
+                    <predicate key="attributes"></predicate>
+                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="rate">60000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select data from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

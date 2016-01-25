@@ -1,0 +1,51 @@
+<virtual-sensor name="cimisJsonHourlyEtAtNoon" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="provider" type="varchar(100)"/>
+            <field name="hlyrelhum" type="varchar(100)"/>
+            <field name="hlyvappres" type="varchar(100)"/>
+            <field name="hour" type="varchar(100)"/>
+            <field name="standard" type="varchar(100)"/>
+            <field name="hlywinddir" type="varchar(100)"/>
+            <field name="date" type="varchar(100)"/>
+            <field name="station" type="varchar(100)"/>
+            <field name="scope" type="varchar(100)"/>
+            <field name="hlyairtmp" type="varchar(100)"/>
+            <field name="hlydewpnt" type="varchar(100)"/>
+            <field name="hlyprecip" type="varchar(100)"/>
+            <field name="hlywindspd" type="varchar(100)"/>
+            <field name="hlyreswind" type="varchar(100)"/>
+            <field name="hlysolrad" type="varchar(100)"/>
+            <field name="hlysoiltmp" type="varchar(100)"/>
+            <field name="julian" type="varchar(100)"/>
+            <field name="zipcodes" type="varchar(100)"/>
+
+        </output-structure>
+    </processing-class>
+    <description>Virtual sensor for CIMIS api. It records hourly reading at noon for the previous day. Needs the CIMIS API key below</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="20000" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd</predicate>
+                    <predicate key="attributes"></predicate>
+                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="rate">1800000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select _____data__providers__0____owner as provider ,  _____data__providers__0____records__12____hlyrelhum__value as hlyrelhum ,  _____data__providers__0____records__12____hlyvappres__value as hlyvappres,  _____data__providers__0____records__12____hour as hour ,  _____data__providers__0____records__12____standard as standard,  _____data__providers__0____records__12____hlywinddir__value as hlywinddir ,  _____data__providers__0____records__12____date as date ,  _____data__providers__0____records__12____station as station ,  _____data__providers__0____records__12____scope as scope,  _____data__providers__0____records__12____hlyairtmp__value as hlyairtmp,  _____data__providers__0____records__12____hlydewpnt__value as hlydewpnt,  _____data__providers__0____records__12____hlyprecip__value as hlyprecip ,  _____data__providers__0____records__12____hlywindspd__value as hlywindspd ,  _____data__providers__0____records__12____hlyreswind__value as hlyreswind ,  _____data__providers__0____records__12____hlysolrad__value as hlysolrad ,  _____data__providers__0____records__12____hlysoiltmp__value as hlysoiltmp ,  _____data__providers__0____records__12____julian as julian ,  _____data__providers__0____records__12____zipcodes as zipcodes  from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

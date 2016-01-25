@@ -24,8 +24,10 @@
 package gsn.wrappers.general;
 
 import com.jayway.jsonpath.*;
+
 import gsn.beans.*;
 import gsn.wrappers.*;
+import gsn.utils.JsonFlattener;
 import org.apache.log4j.*;
 import org.json.*;
 import org.json.JSONObject;
@@ -36,6 +38,7 @@ import java.lang.*;
 import java.lang.Exception;
 import java.lang.Object;
 import java.lang.String;
+import java.lang.Thread;
 import java.net.*;
 import java.text.*;
 import java.text.SimpleDateFormat;
@@ -44,13 +47,13 @@ import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
-public class GenericHttpGetWrapper extends AbstractWrapper {
-    private static final int DEFAULT_RATE = 10000; // time in milliseconds
+public class HttpGetJsonWrapper extends AbstractWrapper {
+    private static final int DEFAULT_RATE = 20000; // time in milliseconds
     private static final int TWO_DAYS = 48*3600*1000; // two days in milliseconds
+    private static final int ONE_DAY = 24*3600*1000; // one day in milliseconds
     private static int threadCounter = 0;
-    private final transient Logger logger = Logger.getLogger(HttpGetWrapper.class);
+    private final transient Logger logger = Logger.getLogger(HttpGetJsonWrapper.class);
     private transient DataField[] outputStructure = null;
-
     private String urlPath;
     private HttpURLConnection httpUrlConnection;
     private URL url;
@@ -60,23 +63,24 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
     private String requestFormat = null;
     private String requestParemeters = null;
     private String rateDynamic = null;
+    private boolean alterUrl = false;
     private BufferedReader streamReader = null;
     private String attributesListString = null;
 
     public boolean initialize() {
         this.addressBean = getActiveAddressBean();
-        urlPath = this.addressBean.getPredicateValue("url");
-
-        inputRate = this.addressBean.getPredicateValue("rate");
-        if (inputRate == null || inputRate.trim().length() == 0) {
+        inputRate = this.addressBean.getPredicateValue( "rate" );
+        if ( inputRate == null || inputRate.trim( ).length( ) == 0 ) {
             rate = DEFAULT_RATE;
-        } else {
+        }
+        else {
             rate = Integer.parseInt(inputRate);
         }
+        urlPath = this.addressBean.getPredicateValue("url");
         requestFormat = this.addressBean.getPredicateValue("request-format");
         requestParemeters = this.addressBean.getPredicateValue("request-parameters");
-        if(requestParemeters != null && requestParemeters.trim().length() != 0) {
-            // TODO check for URL builder class
+        if (requestParemeters != null && requestParemeters.trim().length() != 0) {
+            // TODO replace with URL builder class
             urlPath = urlPath + requestParemeters;
         }
         rateDynamic = this.addressBean.getPredicateValue("rate-dynamic");
@@ -91,15 +95,6 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
                 // TODO handle hourly calls
             }
         }
-
-        attributesListString = this.addressBean.getPredicateValue("attributes");
-        if(attributesListString != null && attributesListString.trim().length() != 0) {
-            initializeOtputStructure(attributesListString);
-        } else {
-            //    throw new IllegalStateException("missing attributes");
-            outputStructure = new DataField[]{
-                    new DataField("data", "varchar(10000)", "Entire response from a API.")};
-        }
         try {
             logger.info("calling url: " + urlPath);
             url = new URL(urlPath);
@@ -107,13 +102,45 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
             logger.error("Loading the http wrapper failed : " + e.getMessage(), e);
             return false;
         }
+        // call the API and get the JSON structure from it.
+        // Flatten it and initialize the OutputStructure.
+
+        try {
+            httpUrlConnection = (HttpURLConnection) url.openConnection();
+            httpUrlConnection.setRequestMethod("GET");
+            httpUrlConnection.setRequestProperty("Accept", requestFormat);
+            logger.info("connecting ...");
+            httpUrlConnection.connect();
+            logger.info("response code: " + httpUrlConnection.getResponseCode());
+            streamReader = new BufferedReader(new InputStreamReader(httpUrlConnection.getInputStream(), "UTF-8"));
+            StringBuilder responseStrBuilder = new StringBuilder();
+            String inputStr;
+            while ((inputStr = streamReader.readLine()) != null) {
+                responseStrBuilder.append(inputStr);
+            }
+            String data = responseStrBuilder.toString();
+            extractAttributesForOutputStructure(data);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        } finally {
+            httpUrlConnection.disconnect();
+            if (streamReader != null) {
+                try {
+                    streamReader.close();
+                } catch (IOException e) {
+                    logger.error("Couldn't close the stream reader.", e);
+                }
+            }
+        }
         return true;
     }
 
     public void run() {
         while (isActive()) {
             try {
-                Thread.sleep(rate);
+
                 httpUrlConnection = (HttpURLConnection) url.openConnection();
                 httpUrlConnection.setRequestMethod("GET");
                 httpUrlConnection.setRequestProperty("Accept", requestFormat);
@@ -130,6 +157,7 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
                 Serializable[] objects = extractAttributes(data);
                 StreamElement se = new StreamElement(outputStructure, objects);
                 postStreamElement(se);
+                Thread.sleep(rate);
             } catch (InterruptedException e) {
                 logger.error(e.getMessage(), e);
             } catch (IOException e) {
@@ -149,40 +177,59 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
         }
     }
 
-    private void initializeOtputStructure(String attributesListString) {
-        logger.info("initialize otput structure");
-        String[] attr = attributesListString.split(",");
-        outputStructure = new DataField[attr.length + 1];
-        int i = 0;
-        outputStructure[i++] = new DataField("data", "varchar(10000)", "Entire response from a API.");
-        for (String s : attr) {
-            String[] row = s.split(":");
-            outputStructure[i++] = new DataField(row[0], row[1], row[2]);
+    private void extractAttributesForOutputStructure(final String data) {
+        int j = 0;
+        try {
+            String s = JsonFlattener.encode(data).replace("{", "").replace("}", "").replace("\"", "");
+            String[] entities = s.split("!!!");
+            String[] jsonPathsFiledNames = new String[entities.length];
+            String[] jsonFieldTypes = new String[entities.length];
+            for (int i = 0; i < entities.length; i++) {
+                String path = entities[i].split(":")[0].trim();
+                logger.debug("entity " + i + " : " + path);
+                if (path.length() != 0) {
+                    jsonPathsFiledNames[j] = "$." + path;
+                    logger.debug("path " + jsonPathsFiledNames[j]);
+                    String typeName = convertClassNameToGsnType(JsonPath.read(data, path).getClass().getName());
+                    jsonFieldTypes[j] = typeName;
+                    j++;
+                }
+            }
+            outputStructure = new DataField[j];
+            for (int k = 0; k < j - 1; k++) {
+                String name = "_" + jsonPathsFiledNames[k].replaceAll("[\\.\\[\\$\\]]","__");
+                outputStructure[k] = new DataField(name.toUpperCase(), jsonFieldTypes[k], jsonPathsFiledNames[k]);
+                logger.info("outputStructure: name: " + jsonPathsFiledNames[k] + " *** type: " + jsonFieldTypes[k]);
+            }
+            outputStructure[j - 1] = new DataField("data", "varchar(100000)", "Entire response from a API.");
+        } catch (JSONException e) {
+            logger.error("JsonE: ", e);
         }
-        logger.debug("out str size is " + outputStructure.length);
     }
 
     private Serializable[] extractAttributes(final String data) {
         logger.info("extracting attributes.");
         logger.info("data " + data);
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
-        dataValueFields[0] = data;
         Object document = Configuration.defaultConfiguration().jsonProvider().parse(data);
-        for (int i = 1; i < outputStructure.length; i++) {
+        for (int i = 0; i < outputStructure.length - 1; i++) {
             try {
-                dataValueFields[i] = (Serializable) JsonPath.read(data, outputStructure[i].getDescription());
-                logger.info("field " + i + " " + dataValueFields[i]);
+                String str = outputStructure[i].getDescription().replace("\"", "");
+                logger.debug("Extracting: " + str + " of type: " + outputStructure[i].getType());
+                dataValueFields[i] = (Serializable) JsonPath.read(data, str);
+                logger.debug("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
             } catch (Exception e) {
                 dataValueFields[i] = "not found";
                 logger.error(e.getMessage(), e);
             }
         }
-        logger.info("data v f size is " + dataValueFields.length);
+        dataValueFields[outputStructure.length - 1] = data;
+        logger.info("dataValueFields size is " + dataValueFields.length);
         return dataValueFields;
     }
 
     public String getWrapperName() {
-        return "Generic Http Get Wrapper";
+        return "Http Get Json Wrapper";
     }
 
     public void dispose() {
@@ -195,5 +242,20 @@ public class GenericHttpGetWrapper extends AbstractWrapper {
             initialize();
         }
         return outputStructure;
+    }
+
+    public String convertClassNameToGsnType(String className) {
+        String dataType = null;
+        logger.debug("clas name: " + className);
+        if (className.equalsIgnoreCase("java.lang.Integer")) {
+            dataType = "Integer";
+        } else if (className.equalsIgnoreCase("java.lang.Double")) {
+            dataType = "Double";
+        } else if (className.equalsIgnoreCase("java.lang.String")) {
+            // dataType = DataTypes.VARCHAR_NAME;
+            dataType = "varchar(100)";
+        }
+        logger.debug("type: " + dataType);
+        return dataType;
     }
 }

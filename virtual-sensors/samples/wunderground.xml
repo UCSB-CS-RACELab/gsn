@@ -11,19 +11,19 @@
 
                 </output-structure>
         </processing-class>
-        <description>virtual sensor for Wunderground api</description>
+        <description>Virtual sensor for Wunderground api. Needs API key.</description>
         <life-cycle pool-size="10" />
         <addressing>
                 <predicate key="geographical">
                 </predicate>
         </addressing>
-        <storage history-size="100" />
+        <storage history-size="20000" />
         <streams>
                 <stream name="input1">
                         <source alias="source1" sampling-rate="1" storage-size="1">
                                 <address wrapper="generic-http-get">
                                         <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
-                                        <predicate key="rate">60000</predicate>
+                                        <predicate key="rate">1800000</predicate>
                                         <predicate key="request-format">application/json; charset=utf-8</predicate>
                                         <predicate key="attributes">temp_c:integer:$.current_observation.temp_c,wind_kph:integer:$.current_observation.wind_kph:,relative_humidity:varchar(100):$.current_observation.relative_humidity</predicate>
                                 </address>
