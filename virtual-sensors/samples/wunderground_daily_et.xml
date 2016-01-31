@@ -1,0 +1,54 @@
+<virtual-sensor name="WundergroundDailyET" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="meanpressure" type="varchar(100)"/>
+            <field name="maxtemp" type="varchar(100)"/>
+            <field name="minpressure " type="varchar(100)"/>
+            <field name="mindewpt " type="varchar(100)"/>
+            <field name="meandewpt" type="varchar(100)"/>
+            <field name="precipm" type="varchar(100)"/>
+            <field name="humidity" type="varchar(100)"/>
+            <field name="maxhumidity" type="varchar(100)"/>
+            <field name="meantemp" type="varchar(100)"/>
+            <field name="maxwspdm" type="varchar(100)"/>
+            <field name="maxpressure" type="varchar(100)"/>
+            <field name="date" type="varchar(100)"/>
+            <field name="minwspd" type="varchar(100)"/>
+            <field name="mintemp" type="varchar(100)"/>
+            <field name="maxdewpt" type="varchar(100)"/>
+            <field name="rain" type="varchar(100)"/>
+            <field name="minhumidity" type="varchar(100)"/>
+            <field name="meanwdire" type="varchar(100)"/>
+            <field name="meanwindspd" type="varchar(100)"/>
+            <field name="meanwdird" type="varchar(100)"/>
+            <field name="date_of_measurement" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>Daily virtual sensor for Wunderground KSBA station. ET parameters. Needs API key. Runs twice a day.</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="20000" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://api.wunderground.com/api/YOUR-API_KEY/yesterday/q/CA/KSBA.json</predicate>
+                    <predicate key="rate">46400000</predicate>
+                    <predicate key="rate-dynamic">wu-daily</predicate>
+                    <predicate key="time-date-format">epoch</predicate>
+                    <predicate key="time-date-field-name">_____history__date__pretty</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                    <predicate key="restricted-path">history.observations</predicate>
+                </address>
+                <query>select _____history__dailysummary__0____meanpressurem as meanpressure,  _____history__dailysummary__0____maxtempm as maxtemp,  _____history__dailysummary__0____minpressurem as minpressure ,  _____history__dailysummary__0____mindewptm as mindewpt ,  _____history__dailysummary__0____meandewptm  as meandewpt,  _____history__dailysummary__0____precipm as  precipm,  _____history__dailysummary__0____humidity as humidity,  _____history__dailysummary__0____maxhumidity as maxhumidity,  _____history__dailysummary__0____meantempm as meantemp,  _____history__dailysummary__0____maxwspdm as maxwspdm,  _____history__dailysummary__0____maxpressurem as maxpressure,  _____history__dailysummary__0____date__pretty as date,  _____history__dailysummary__0____minwspdm as minwspd,  _____history__dailysummary__0____mintempm as mintemp,  _____history__dailysummary__0____maxdewptm as maxdewpt,  _____history__dailysummary__0____rain as rain,  _____history__dailysummary__0____minhumidity as minhumidity,  _____history__dailysummary__0____meanwdire as meanwdire,  _____history__dailysummary__0____meanwindspdm as meanwindspd,  _____history__dailysummary__0____meanwdird as meanwdird, date_of_measurement  from wrapper </query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

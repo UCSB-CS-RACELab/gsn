@@ -1,0 +1,40 @@
+<virtual-sensor name="cimisScsDailyEt" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="provider" type="varchar(100)"/>
+            <field name="scope" type="varchar(100)"/>
+            <field name="day_asce_eto" type="varchar(100)"/>
+            <field name="day_sol_rad_avg" type="varchar(100)"/>
+            <field name="date" type="varchar(100)"/>
+            <field name="zip_codes" type="varchar(100)"/>
+            <field name="date_of_measurement" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>Virtual sensor for CIMIS spatial api. Needs the CIMIS API key below.</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=YOUR-API_KEY&amp;targets=lat=34.99,lng=-118.34;lat=36.45,lng=-118.16&amp;dataItems=day-asce-eto,day-sol-rad-avg</predicate>
+                    <predicate key="rate-dynamic">cimis-daily</predicate>
+                    <predicate key="time-date-format">yyyy-MM-dd</predicate>
+                    <predicate key="time-date-field-name">_____data__providers__0____records__0____date</predicate>
+                    <predicate key="rate">46400000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                </address>
+                <query>select _____data__providers__0____owner as provider,  _____data__providers__0____records__0____scope as scope,  _____data__providers__0____records__0____dayasceeto__value as day_asce_eto,  _____data__providers__0____records__0____daysolradavg__value as day_sol_rad_avg,  _____data__providers__0____records__0____date as date, _____data__providers__0____records__0____zipcodes as zip_codes,  date_of_measurement from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>
