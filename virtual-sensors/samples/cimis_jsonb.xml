@@ -1,17 +1,15 @@
-<virtual-sensor name="cimis" priority="10">
+<virtual-sensor name="cimis_jsonb_test2" priority="10">
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <init-params>
         </init-params>
         <output-structure>
-            <field name="dayairtmpavg" type="varchar(100)" />
-            <field name="dayrelhumavg" type="varchar(100)" />
-            <field name="daywindspdavg" type="varchar(100)" />
-            <field name="dayvappresavg" type="varchar(100)" />
-            <field name="daysolradavg" type="varchar(100)" />
-            <field name="daysolradnet" type="varchar(100)" />
-            <field name="data" type="varchar(10000)"/>
-            <feild name ="data2" type="jsonb"/>		
+            <field name ="day_air_tmp_avg" type="varchar(100)"/>
+            <field name ="day_rel_hum_avg" type="varchar(100)"/>
+            <field name ="day_sol_rad_avg" type="varchar(100)"/>
+            <field name ="day_sol_rad_net" type="varchar(100)"/>
+            <field name ="day_vap_pres_avg" type="varchar(100)"/>
+            <field name ="day_wind_spd_avg" type="varchar(100)"/>
         </output-structure>
     </processing-class>
     <description>Virtual sensor for CIMIS api. Needs the CIMIS API key.</description>
@@ -24,9 +22,9 @@
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
-                <address wrapper="generic-http-get">
+                <address wrapper="generic-http-get-jsonb">
                     <predicate key="url">http://et.water.ca.gov/api/data</predicate>
-                    <predicate key="request-parameters">?appKey=YOUR-API-KEY&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net</predicate>
                     <predicate key="attributes">dayairtmpavg:varchar(100):$.Data.Providers.[0].Records.[0].DayAirTmpAvg.Value,dayrelhumavg:varchar(100):$.Data.Providers[0].Records[0].DayRelHumAvg.Value,daywindspdavg:varchar(100):$.Data.Providers.[0].Records.[0].DayWindSpdAvg.Value,dayvappresavg:varchar(100):$.Data.Providers.[0].Records.[0].DayVapPresAvg.Value,daysolradavg:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadAvg.Value,daysolradnet:varchar(100):$.Data.Providers.[0].Records.[0].DaySolRadNet.Value</predicate>
                     <predicate key="rate-dynamic">daily</predicate>
                     <predicate key="rate">60000</predicate>
@@ -35,7 +33,7 @@
                 </address>
                 <query>select * from wrapper</query>
             </source>
-            <query>select * from source1</query>
+            <query>select jsonb::jsonb #> '{Data, Providers,0,Records,0,DayAirTmpAvg,Value}' as day_air_tmp_avg, jsonb::jsonb #> '{Data, Providers,0,Records,0,DayRelHumAvg,Value}' as day_rel_hum_avg,jsonb::jsonb #> '{Data, Providers,0,Records,0,DaySolRadAvg,Value}' as day_sol_rad_avg,jsonb::jsonb #> '{Data, Providers,0,Records,0,DaySolRadNet,Value}' as day_sol_rad_net,jsonb::jsonb #> '{Data, Providers,0,Records,0,DayVapPresAvg,Value}' as day_vap_pres_avg,jsonb::jsonb #> '{Data, Providers,0,Records,0,DayWindSpdAvg,Value}' as day_wind_spd_avg from source1</query>
         </stream>
     </streams>
 </virtual-sensor>

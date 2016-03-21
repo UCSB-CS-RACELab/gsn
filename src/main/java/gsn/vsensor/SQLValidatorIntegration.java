@@ -50,7 +50,8 @@ public class SQLValidatorIntegration implements VSensorStateChangeListener{
 	public boolean vsLoading(VSensorConfig config) {
 		try {
             String ddl = Main.getValidationStorage().getStatementCreateTable(config.getName(), config.getOutputStructure(), validator.getSampleConnection()).toString();
-			validator.executeDDL(ddl);
+		/* ByPass h2 validation */
+		//	validator.executeDDL(ddl);
 		}catch (Exception e) {
 			logger.error(e.getMessage(),e);
 		}
@@ -60,7 +61,8 @@ public class SQLValidatorIntegration implements VSensorStateChangeListener{
 	public boolean vsUnLoading(VSensorConfig config) {
 		try {
 			String ddl = Main.getValidationStorage().getStatementDropTable(config.getName(), validator.getSampleConnection()).toString();
-			validator.executeDDL(ddl);
+			/* By Pass h2 validation */
+			//validator.executeDDL(ddl);
 		}catch (Exception e) {
 			logger.error(e.getMessage(),e);
 			return false;

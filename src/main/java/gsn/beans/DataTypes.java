@@ -117,6 +117,14 @@ public class DataTypes {
    
    public final static String            FLOAT_NAME             = "Float";   
    
+   // NEXT FIELD
+   public final static String            JSONB_PATTERN_STRING   = "\\s*(jsonb)" + OPTIONAL_NUMBER_PARAMETER + "(\\s*:.*)?";
+   
+   public final static byte              JSONB                  = 10;
+   
+   public final static String            JSONB_NAME             = "Jsonb";   
+   
+   
    // FINISH
    public final static Pattern [ ]       ALL_PATTERNS              = new Pattern [ ] { Pattern.compile( VAR_CHAR_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) ,
          Pattern.compile( CHAR_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) , Pattern.compile( INTEGER_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) ,
@@ -124,7 +132,8 @@ public class DataTypes {
          Pattern.compile( DOUBLE_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) ,
          Pattern.compile( TIME_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) ,
          Pattern.compile( TINYINT_PATTERN_STRING , Pattern.CASE_INSENSITIVE ) , Pattern.compile( SMALLINT_PATTERN_STRING , Pattern.CASE_INSENSITIVE ),
-         Pattern.compile( FLOAT_PATTERN_STRING , Pattern.CASE_INSENSITIVE )};
+         Pattern.compile( FLOAT_PATTERN_STRING , Pattern.CASE_INSENSITIVE ),
+         Pattern.compile( JSONB_PATTERN_STRING , Pattern.CASE_INSENSITIVE )};
    
    public final static StringBuilder     ERROR_MESSAGE             = new StringBuilder( "Acceptable types are (TINYINT, SMALLINT, INTEGER,BIGINT,CHAR(#),BINARY[(#)],VARCHAR(#),DOUBLE,TIME, FLOAT)." );
    
@@ -132,7 +141,7 @@ public class DataTypes {
      TIME_NAME ,
      TINYINT_NAME ,
      SMALLINT_NAME,
-     FLOAT_NAME};
+     FLOAT_NAME,JSONB_NAME};
    
    public final static Object [ ]        TYPE_SAMPLE_VALUES        = { "A chain of chars" , 'c' , new Integer( 32 ) , new Integer( 66000 ) , new Byte( ( byte ) 12 ) , new Double( 3.141592 ) ,
          new Date( ).getTime( ) , new Integer( 1 ) , new Integer( 9 ), new Float(2.02) };
@@ -162,6 +171,8 @@ public class DataTypes {
 			return  DataTypes.VARCHAR;
 		else if (sqlType == Types.BINARY || sqlType == Types.BLOB|| sqlType == Types.VARBINARY )
 			return  DataTypes.BINARY;
+		else if (sqlType == Types.JAVA_OBJECT || sqlType == Types.STRUCT || sqlType == Types.OTHER)
+			return DataTypes.JSONB;
 	   throw new RuntimeException("Can't convert SQL type id of: "+sqlType+ " to GSN type id.");
    }
 }

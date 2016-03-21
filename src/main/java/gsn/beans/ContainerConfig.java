@@ -65,7 +65,7 @@ public class ContainerConfig {
 	public static final int               DEFAULT_ZMQ_PROXY_PORT           = 22022;
 	public static final int               DEFAULT_ZMQ_META_PORT            = 22023;
 	public static final boolean           DEFAULT_ZMQ_ENABLED               = false;
-	public static final String            DEFAULT_LOGGING_LEVEL            = ContainerConfig.LOGGING_LEVELS[ 3 ];
+	public static final String            DEFAULT_LOGGING_LEVEL            = ContainerConfig.LOGGING_LEVELS[ 0 ];
 	public static final String            DEFAULT_WEB_NAME                 = "NoName.";
 	public static final String            DEFAULT_WEB_AUTHOR               = "Author not specified.";
 	public static final String            DEFAULT_WEB_EMAIL                = "Email not specified.";

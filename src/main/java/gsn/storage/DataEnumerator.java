@@ -133,7 +133,9 @@ public class DataEnumerator implements DataEnumeratorIF {
 				} else {
 					fieldNames.add( colName );
                     byte gsnType = storageManager.convertLocalTypeToGSN(colTypeInJDBCFormat,colScale );
-                    if (gsnType == -100){
+                	    
+                   logger.info("Query result: " +preparedStatement.toString());
+		if (gsnType == -100){
                         logger.error("The type can't be converted to GSN form - error description: ");
                         logger.warn("Table name: " + tableName);
                         logger.warn("Column name: " +colName);
@@ -146,7 +148,7 @@ public class DataEnumerator implements DataEnumeratorIF {
 			}
             if (problematicColumn != -1){
                 while(true){
-                    logger.warn("Values of the column: " + resultSet.getObject(problematicColumn));
+                    logger.info("Values of the column: " + resultSet.getObject(problematicColumn));
                     if (resultSet.isLast()) break;
                     resultSet.next();
                 }
@@ -217,6 +219,10 @@ public class DataEnumerator implements DataEnumeratorIF {
                         }
 						else
 							output[ innerIndex ] = resultSet.getBytes( actualColIndex );
+						break;
+					case DataTypes.JSONB:
+						/* can be getObject as well */
+						output[ innerIndex ] = resultSet.getString( actualColIndex );
 						break;
 					}
 					if (resultSet.wasNull())

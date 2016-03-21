@@ -98,6 +98,9 @@ public class H2StorageManager extends StorageManager {
                     case Types.VARBINARY:
                     case Types.LONGVARBINARY:
                         return DataTypes.BINARY;
+                    case Types.JAVA_OBJECT:
+                    case Types.STRUCT:
+                    	return DataTypes.JSONB;
                     default:
                         logger.error("The type can't be converted to GSN form : " + jdbcType);
                         break;

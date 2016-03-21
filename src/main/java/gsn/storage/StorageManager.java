@@ -32,6 +32,7 @@
 */
 
 package gsn.storage;
+import org.postgresql.util.PGobject;
 
 import gsn.Main;
 import gsn.beans.DataField;
@@ -498,8 +499,8 @@ public abstract class StorageManager {
     }
 
     public DataEnumerator executeQuery(StringBuilder query, boolean binaryFieldsLinked, Connection connection) throws SQLException {
-        if (logger.isDebugEnabled())
-            logger.debug("Executing query: " + query + "( Binary Field Linked:" + binaryFieldsLinked + ")");
+        //if (logger.isDebugEnabled())
+            logger.info("Executing query: " + query + "( Binary Field Linked:" + binaryFieldsLinked + ")");
         return new DataEnumerator(this, connection.prepareStatement(query.toString()), binaryFieldsLinked);
     }
 
@@ -517,8 +518,8 @@ public abstract class StorageManager {
             return executeQuery(abstractQuery.getStandardQuery(), binaryFieldsLinked, connection);
         }
         String query = addLimit(abstractQuery.getStandardQuery().toString(), abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
-        if (logger.isDebugEnabled())
-            logger.debug("Executing query: " + query + "(" + binaryFieldsLinked + ")");
+       // if (logger.isDebugEnabled())
+            logger.info("Executing query: " + query + "(" + binaryFieldsLinked + ")");
         return new DataEnumerator(this, connection.prepareStatement(query.toString()), binaryFieldsLinked);
     }
 
@@ -527,8 +528,8 @@ public abstract class StorageManager {
             return streamedExecuteQuery(abstractQuery.getStandardQuery().toString(), binaryFieldsLinked, connection);
         }
         String query = addLimit(abstractQuery.getStandardQuery().toString(), abstractQuery.getLimitCriterion().getSize(), abstractQuery.getLimitCriterion().getOffset());
-        if (logger.isDebugEnabled())
-            logger.debug("Executing query: " + query + "(" + binaryFieldsLinked + ")");
+        //if (logger.isDebugEnabled())
+            logger.info("Executing query: " + query + "(" + binaryFieldsLinked + ")");
         return streamedExecuteQuery(query, binaryFieldsLinked, connection);
     }
 
@@ -697,6 +698,18 @@ public abstract class StorageManager {
                         else
                             ps.setBytes(counter, (byte[]) value);
                         break;
+                    case DataTypes.JSONB:
+                        if (value == null)
+                            ps.setNull(counter, Types.VARCHAR);
+                        else {
+                        //	logger.info("Recognised correct type");
+                           // PGobject dataObject = new PGobject();
+                            //dataObject.setType("jsonb");
+                            //dataObject.setValue(value.toString());
+                        	ps.setObject(counter, value.toString());
+                            
+                        }
+                            break;    
                     default:
                         logger.error("The type conversion is not supported for : "
                                 + dataField.getName() + "("
@@ -740,15 +753,23 @@ public abstract class StorageManager {
     public StringBuilder getStatementInsert(CharSequence tableName, DataField fields[]) {
         StringBuilder toReturn = new StringBuilder("insert into ").append(tableName).append(" ( ");
         int numberOfQuestionMarks = 1; //Timed is always there.
+        int numberOfJson = 0;
         for (DataField dataField : fields) {
             if (dataField.getName().equalsIgnoreCase("timed"))
                 continue;
-            numberOfQuestionMarks++;
+            if(dataField.getName().equalsIgnoreCase("jsonb"))
+            	numberOfJson++;
+            else
+            	numberOfQuestionMarks++;
             toReturn.append(dataField.getName()).append(" ,");
         }
         toReturn.append(" timed ").append(" ) values (");
+        for (int i = 0; i < numberOfJson; i++)
+            toReturn.append("?::jsonb,");
+        
         for (int i = 1; i <= numberOfQuestionMarks; i++)
             toReturn.append("?,");
+        
         toReturn.deleteCharAt(toReturn.length() - 1);
         toReturn.append(")");
         return toReturn;
