@@ -38,11 +38,11 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="http-get-json">
-                    <predicate key="url">http://api.wunderground.com/api/YOUR-API_KEY/yesterday/q/CA/KSBA.json</predicate>
                     <predicate key="rate">46400000</predicate>
-                    <predicate key="rate-dynamic">wu-daily</predicate>
-                    <predicate key="time-date-format">epoch</predicate>
-                    <predicate key="time-date-field-name">_____history__date__pretty</predicate>
+                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/yesterday/q/CA/KSBA.json</predicate>
+                    <predicate key="rate-dynamic">current</predicate>
+                    <predicate key="tom-format">MMMM dd, yyyy</predicate>
+                    <predicate key="tom-field">_____history__date__pretty</predicate>
                     <predicate key="request-format">application/json; charset=utf-8</predicate>
                     <predicate key="restricted-path">history.observations</predicate>
                 </address>

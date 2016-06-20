@@ -1,0 +1,35 @@
+<virtual-sensor name="SimpleIrrometer" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="id" type="Integer"/>
+            <field name="date_of_measurement" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>Simple virtual sensor for Irrometer station. Needs API key.</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="20000" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="http-get-json">
+                    <predicate key="url">http://www.sensmitweb.com/api/v1/meshes/?offset=0</predicate>
+                    <predicate key="rate">46400000</predicate>
+                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                    <predicate key="rate-dynamic">irrometer-simple</predicate>
+                    <predicate key="authorization">ApiKey user_1449963207378.733:96a6449f0ee62e81a01be77d12c79f4de4ee5b80</predicate>
+                    <predicate key="time-date-format">yyyy-MM-dd'T'hh:mm:ssXXX</predicate>
+                    <predicate key="time-date-field-name">_____objects__0____last_data_time</predicate>
+                </address>
+                <query>select _____objects__0____id as id, date_of_measurement from wrapper </query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

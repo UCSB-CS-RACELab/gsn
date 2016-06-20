@@ -24,13 +24,19 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="http-get-json">
-                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
-                    <predicate key="request-parameters">?appKey=YOUR-API_KEY&amp;targets=lat=34.99,lng=-118.34;lat=36.45,lng=-118.16&amp;dataItems=day-asce-eto,day-sol-rad-avg</predicate>
-                    <predicate key="rate-dynamic">cimis-daily</predicate>
-                    <predicate key="time-date-format">yyyy-MM-dd</predicate>
-                    <predicate key="time-date-field-name">_____data__providers__0____records__0____date</predicate>
                     <predicate key="rate">46400000</predicate>
+                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
+                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=lat=34.99,lng=-118.34;lat=36.45,lng=-118.16&amp;dataItems=day-asce-eto,day-sol-rad-avg&amp;</predicate>
+
+                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="url-time-format">yyyy-MM-dd</predicate>
+                    <predicate key="url-time-start-parameter-name">startDate</predicate>
+                    <predicate key="url-time-end-parameter-name">endDate</predicate>>
+
                     <predicate key="request-format">application/json; charset=utf-8</predicate>
+
+                    <predicate key="tom-format">yyyy-MM-dd</predicate>
+                    <predicate key="tom-field">_____data__providers__0____records__0____date</predicate>
                 </address>
                 <query>select _____data__providers__0____owner as provider,  _____data__providers__0____records__0____scope as scope,  _____data__providers__0____records__0____dayasceeto__value as day_asce_eto,  _____data__providers__0____records__0____daysolradavg__value as day_sol_rad_avg,  _____data__providers__0____records__0____date as date, _____data__providers__0____records__0____zipcodes as zip_codes,  date_of_measurement from wrapper</query>
             </source>
