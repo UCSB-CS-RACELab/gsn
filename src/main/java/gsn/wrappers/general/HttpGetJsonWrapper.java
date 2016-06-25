@@ -1,22 +1,5 @@
 /**
  * Global Sensor Networks (GSN) Source Code
- * Copyright (c) 2006-2014, Ecole Polytechnique Federale de Lausanne (EPFL)
- *
- * This file is part of GSN.
- *
- * GSN is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * GSN is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with GSN.  If not, see <http://www.gnu.org/licenses/>.
- *
  * File: src/gsn/wrappers/general/GenericHttpGetWrapper.java
  *
  */
@@ -24,35 +7,23 @@
 package gsn.wrappers.general;
 
 import com.jayway.jsonpath.*;
-
 import gsn.beans.*;
-import gsn.wrappers.*;
 import gsn.utils.*;
-import gsn.utils.JsonFlattener;
+import gsn.wrappers.*;
 import org.apache.log4j.*;
 import org.json.*;
-import org.json.JSONObject;
 
 import java.io.*;
-import java.io.Serializable;
-import java.lang.*;
-import java.lang.Exception;
-import java.lang.InterruptedException;
-import java.lang.Object;
-import java.lang.String;
-import java.lang.Thread;
 import java.net.*;
 import java.text.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
 
 public class HttpGetJsonWrapper extends AbstractWrapper {
     private static final int DEFAULT_RATE = 3600 * 1000; // time in milliseconds
     private static final int TWO_DAYS = 48 * 3600 * 1000; // two days in milliseconds
     private static final int ONE_DAY = 24 * 3600 * 1000; // one day in milliseconds
+    private static final int TWO_HOURS = 2 * 3600 * 1000; // one day in milliseconds
+    private static final int ONE_HOUR = 3600 * 1000; // one day in milliseconds
     private static int threadCounter = 0;
     private final transient Logger logger = Logger.getLogger(HttpGetJsonWrapper.class);
     // unique date format for all the APIs
@@ -61,7 +32,7 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
     public static final String DAILY = "daily";
     public static final String HOURLY = "hourly";
     public static final String CURRENT = "current";
-    private transient DataField[] outputStructure = null;
+    private transient gsn.beans.DataField[] outputStructure = null;
     private String urlPath;
     private String restrictedPath = null;
     private boolean requestApiTimeOfMeasurement;
@@ -222,10 +193,10 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
             String[] jsonFieldTypes = new String[entities.length];
             for (int i = 0; i < entities.length; i++) {
                 String path = entities[i].split(":")[0].trim();
-                logger.debug("entity " + i + " : " + path);
+                logger.info("entity " + i + " : " + path);
                 if (path.length() != 0) {
                     if (restrictedPath != null && !restrictedPath.isEmpty() && path.matches(restrictedPath)) {
-                        logger.debug("skipping " + path);
+                        logger.info("skipping " + path);
                         continue;
                     }
                     jsonPathsFiledNames[j] = "$." + path;
@@ -240,7 +211,7 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
             for (int k = 0; k < j - 1; k++) {
                 String name = "_" + jsonPathsFiledNames[k].replaceAll("[\\.\\[\\$\\]]", "__");
                 outputStructure[k] = new DataField(name.toUpperCase(), jsonFieldTypes[k], jsonPathsFiledNames[k]);
-                logger.debug("outputStructure: name: " + jsonPathsFiledNames[k] + " *** type: " + jsonFieldTypes[k]);
+                logger.info("outputStructure: name: " + jsonPathsFiledNames[k] + " *** type: " + jsonFieldTypes[k]);
             }
             // outputStructure[j - 1] = new DataField("data", "varchar(100000)", "Entire response from a API.");
             outputStructure[j - 1] = new DataField("date_of_measurement", "varchar(100)", "Time when measurement occured");
@@ -261,7 +232,7 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
                 String str = outputStructure[i].getDescription().replace("\"", "");
                 logger.debug("Extracting: " + str + " of type: " + outputStructure[i].getType());
                 dataValueFields[i] = (Serializable) JsonPath.read(data, str);
-                logger.debug("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
+                logger.info("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
             } catch (Exception e) {
                 dataValueFields[i] = "not found";
                 logger.error(e.getMessage(), e);

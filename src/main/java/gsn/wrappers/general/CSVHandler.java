@@ -25,7 +25,7 @@
 *
 */
 
-package gsn.wrappers.general;
+package java.gsn.wrappers.general;
 import gsn.beans.DataField;
 import gsn.utils.CaseInsensitiveComparator;
 

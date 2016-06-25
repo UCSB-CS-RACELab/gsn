@@ -5,12 +5,10 @@
 
 package gsn.utils;
 
-import java.text.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Locale;
-
 import org.apache.log4j.*;
+
+import java.text.*;
+import java.util.*;
 
 public class TimeFormatting {
     private static Logger logger = Logger.getLogger(TimeFormatting.class);

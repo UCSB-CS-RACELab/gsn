@@ -31,19 +31,31 @@
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="http-get-json">
-                    <predicate key="rate">46400000</predicate>
-                    <predicate key="url">http://www.sensmitweb.com/api/v1/sensmits/2081/data/?</predicate>
+                    <predicate key="MEASUREMENT_FREQUENCY">1800000</predicate>
+                    <predicate key="UPDATE_FREQUENCY">1800000</predicate>
+                    <predicate key="QUERING_FREQUENCY">1200000</predicate>
+                    <predicate key="REQUEST_INTERVAL">3600000</predicate>
+                    <predicate key="url">http://www.sensmitweb.com/api/v1/sensmits/2081/data/?start_time=${date: }&amp;end_time=${date:}</predicate>
+                    <predicate key="url">http://et.water.ca.gov/api/data?${appKey: }&amp;targets=155&amp;dataItems=day-air-tmp-avg,day-rel-hum-avg,day-wind-spd-avg,day-vap-pres-avg,day-sol-rad-avg,day-sol-rad-net&amp;startDate=2016-06-17&amp;endDate=2016-06-18</predicate>
+                    <predicate key="url">http://et.water.ca.gov/api/data?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd&amp;startDate=2016-06-17&amp;endDate=2016-06-18</predicate>
+                    <predicate key="url">http://et.water.ca.gov/api/data?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=lat=34.99,lng=-118.34;lat=36.45,lng=-118.16&amp;dataItems=day-asce-eto,day-sol-rad-avg&amp;</predicate>
+                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/yesterday/q/CA/KSBA.json</predicate>
+                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
 
-                    <predicate key="rate-dynamic">daily</predicate>
+                    <predicate key="request-parameters"></predicate>
+                    <predicate key="request-properties"></predicate>
+
+
+
                     <predicate key="url-time-format">yyyy-MM-dd'T'hh:mm:ssXXX</predicate>
-                    <predicate key="url-time-start-parameter-name">start_time</predicate>
-                    <predicate key="url-time-end-parameter-name">end_time</predicate>
 
                     <predicate key="request-format">application/json; charset=utf-8</predicate>
                     <predicate key="authorization">ApiKey user_1449963207378.733:96a6449f0ee62e81a01be77d12c79f4de4ee5b80</predicate>
 
                     <predicate key="tom-format">epoch</predicate>
                     <predicate key="tom-field">_____objects__0____seconds</predicate>
+                    <predicate key="tom-hour-field">_____objects__0____seconds</predicate>
+                    <predicate key="restricted-path">.*objects\[[^0].*</predicate>
 
                 </address>
                 <query>select _____objects__0____id as id, _____objects__0____sensmit_id as sensmit_id, _____objects__0____seconds as seconds, _____objects__0____timestamp as timestamp, _____objects__0____MO1 as MO1, _____objects__0____MO2 as MO2, _____objects__0____MO3 as MO3, _____objects__0____INT as INT, _____objects__0____EXT as EXT, _____objects__0____POW as POW, _____objects__0____CAP as CAP, _____objects__0____TIP as TIP, _____objects__0____IRR as IRR, date_of_measurement from wrapper</query>

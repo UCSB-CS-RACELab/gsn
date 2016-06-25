@@ -169,7 +169,7 @@ public class VSensorLoader extends Thread {
         	try{
                 loadPlugin(vs);
         	}catch(Exception e){
-        		logger.error("Unable to load VSensor " + vs.getName() + ", retrying later...");
+        		logger.error("Unable to load VSensor " + vs.getName() + ", retrying later...", e);
         		e.printStackTrace();
         	}
         }
