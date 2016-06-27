@@ -151,7 +151,7 @@ public class HttpGetJsonWrapper extends AbstractWrapper {
                     }
                     String data = responseStrBuilder.toString();
                     Serializable[] objects = extractAttributes(data);
-                    logger.info("arrays: os:" + outputStructure.length + " o l " + objects.length);
+                    logger.info("Output structure size:" + outputStructure.length + ". Objects number:  " + objects.length);
                     StreamElement se = new StreamElement(outputStructure, objects);
                     postStreamElement(se);
                     logger.info("Wrapper active sleep for " + rate);

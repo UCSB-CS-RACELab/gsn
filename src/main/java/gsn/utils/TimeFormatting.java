@@ -5,12 +5,82 @@
 
 package gsn.utils;
 
+import com.google.common.base.*;
+import gsn.beans.*;
 import org.apache.log4j.*;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
+import java.io.*;
 import java.text.*;
 import java.util.*;
 
 public class TimeFormatting {
+    private static final String GSN_DATE_TIME_FORMAT = "yyyy-MM-dd hh:mm:ss";
+    private static final String EMPTY = "0000-00-00 00:00:00";
+
+
+    public static String timeOfMeasurement(DataField[] outputStructure, Serializable[] dataValueFields, String tomDateFormat, String tomTimeFormat, String tomDateField, String tomTimeField ) {
+        // Find the index in the outputStructure corresponding to the date field from the JSON response
+
+        DateTime finalDT = null;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(GSN_DATE_TIME_FORMAT);
+
+        // Date
+        if(Strings.isNullOrEmpty(tomDateField) || Strings.isNullOrEmpty(tomDateFormat)) {
+            logger.error("Measurement date field not specified.");
+            return EMPTY;
+        }
+
+        int tomDateFieldIndex = -1;
+        for (int i = 0; i < outputStructure.length; i++) {
+            if (tomDateField.equalsIgnoreCase(outputStructure[i].getName())) {
+                tomDateFieldIndex = i;
+            }
+        }
+        String dateString = String.valueOf(dataValueFields[tomDateFieldIndex]);
+
+        if(tomDateFormat.equalsIgnoreCase("epoch")) {
+            return dateTimeFormatter.print(new DateTime(Long.parseLong(dateString)*1000L));
+        }
+        DateTimeFormatter measurementDateFormatter = DateTimeFormat.forPattern(tomDateFormat);
+        DateTime d = measurementDateFormatter.parseDateTime(dateString);
+
+        int year = d.getYear();
+        int month = d.getMonthOfYear();
+        int day = d.getDayOfMonth();
+
+        // Time
+
+        if(!(Strings.isNullOrEmpty(tomTimeField) || Strings.isNullOrEmpty(tomTimeFormat))) {
+            logger.error("Measurement date field not specified.");
+
+            int tomTimeFieldIndex = -1;
+
+            for (int i = 0; i < outputStructure.length; i++) {
+                if (tomTimeField.equalsIgnoreCase(outputStructure[i].getName())) {
+                    tomTimeFieldIndex = i;
+                }
+            }
+            String timeString = String.valueOf(dataValueFields[tomTimeFieldIndex]);
+
+            DateTimeFormatter measurementTimeFormatter = DateTimeFormat.forPattern(tomTimeFormat);
+            DateTime t = measurementTimeFormatter.parseDateTime(timeString);
+
+            int hour = t.getHourOfDay();
+            int minute = t.getMinuteOfHour();
+            int second = t.getSecondOfMinute();
+            finalDT = new DateTime(year, month, day, hour, minute, second);
+
+        } else {
+            finalDT = new DateTime(year, month, day, 0, 0, 0);
+
+        }
+
+        return dateTimeFormatter.print(finalDT);
+    }
+
+
     private static Logger logger = Logger.getLogger(TimeFormatting.class);
     public static String convertTime(String oldFormat, String newFormat, String oldDate) throws ParseException {
         logger.info("from: " + oldFormat + " to: " + newFormat + " for the field: " + oldDate);
@@ -28,7 +98,7 @@ public class TimeFormatting {
         SimpleDateFormat newSdf = new SimpleDateFormat(newFormat);
         Date date = oldSdf.parse(dateInOldFormat);
         // this is just a hack, CIMIS lists hours as 1200 1300
-        date.setHours(Integer.valueOf(hourInOldFormat)/100); // check deprecated
+        date.setHours(Integer.valueOf(hourInOldFormat) / 100); // check deprecated
         String newTime = newSdf.format(date);
         logger.info("new hourly date " + newTime);
         return newTime;

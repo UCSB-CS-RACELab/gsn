@@ -25,29 +25,18 @@
 *
 */
 
-package java.gsn.wrappers.general;
-import gsn.beans.DataField;
-import gsn.utils.CaseInsensitiveComparator;
+package gsn.wrappers.general;
+import au.com.bytecode.opencsv.*;
+import gsn.beans.*;
+import gsn.utils.*;
+import org.apache.commons.io.*;
+import org.apache.commons.lang.*;
+import org.apache.log4j.*;
+import org.joda.time.*;
+import org.joda.time.format.*;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import au.com.bytecode.opencsv.CSVReader;
+import java.io.*;
+import java.util.*;
 
 /**
  * possible formats for the timestamp fields are available @ http://joda-time.sourceforge.net/api-release/org/joda/time/format/DateTimeFormat.html
