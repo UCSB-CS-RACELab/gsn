@@ -1,4 +1,4 @@
-<virtual-sensor name="WundergroundDailyET" priority="10">
+<virtual-sensor name="WundergroundDailyEtApi" priority="10">
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <init-params>
@@ -37,13 +37,15 @@
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
-                <address wrapper="http-get-json">
-                    <predicate key="rate">46400000</predicate>
+                <address wrapper="api-json">
+                    <predicate key="measurement-frequency"></predicate>
+                    <predicate key="update-frequency"></predicate>
+                    <predicate key="querying-frequency">43200000</predicate> <!-- twice a day -->
                     <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/yesterday/q/CA/KSBA.json</predicate>
-                    <predicate key="rate-dynamic">current</predicate>
-                    <predicate key="tom-format">MMMM dd, yyyy</predicate>
-                    <predicate key="tom-field">_____history__date__pretty</predicate>
-                    <predicate key="request-format">application/json; charset=utf-8</predicate>
+                    <predicate key="measurement-date-format">MMMM dd, yyyy</predicate>
+                    <predicate key="measurement-time-format"></predicate>
+                    <predicate key="measurement-date-field">_____history__date__pretty</predicate>
+                    <predicate key="measurement-time-field"></predicate>
                     <predicate key="restricted-path">.*history.observations.*</predicate>
                 </address>
                 <query>select _____history__dailysummary__0____meanpressurem as meanpressure,  _____history__dailysummary__0____maxtempm as maxtemp,  _____history__dailysummary__0____minpressurem as minpressure ,  _____history__dailysummary__0____mindewptm as mindewpt ,  _____history__dailysummary__0____meandewptm  as meandewpt,  _____history__dailysummary__0____precipm as  precipm,  _____history__dailysummary__0____humidity as humidity,  _____history__dailysummary__0____maxhumidity as maxhumidity,  _____history__dailysummary__0____meantempm as meantemp,  _____history__dailysummary__0____maxwspdm as maxwspdm,  _____history__dailysummary__0____maxpressurem as maxpressure,  _____history__dailysummary__0____date__pretty as date,  _____history__dailysummary__0____minwspdm as minwspd,  _____history__dailysummary__0____mintempm as mintemp,  _____history__dailysummary__0____maxdewptm as maxdewpt,  _____history__dailysummary__0____rain as rain,  _____history__dailysummary__0____minhumidity as minhumidity,  _____history__dailysummary__0____meanwdire as meanwdire,  _____history__dailysummary__0____meanwindspdm as meanwindspd,  _____history__dailysummary__0____meanwdird as meanwdird, date_of_measurement  from wrapper </query>

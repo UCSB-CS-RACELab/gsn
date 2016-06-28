@@ -13,33 +13,27 @@ import java.io.InputStream;
 import java.net.*;
 
 public class ApiJsonWrapper extends AbstractWrapper {
-    private static final String WRAPPER_NAME = "ApiJsonWrapper";
-    private static final String DATE = "date:";
     private static final Logger logger = Logger.getLogger(ApiJsonWrapper.class);
+    private static final String WRAPPER_NAME = "ApiJsonWrapper";
+    private static final String QUERING_FREQUENCY = "querying-frequency";
     private static final int DEFAULT_RATE = 3600 * 1000; // time in milliseconds
-    private static final int DEFAULT_INTERVAL = 3600 * 1000; // time in milliseconds
 
-    private static final String MEASUREMENT_FREQUENCY = "measurement-frequency";
-    private static String UPDATE_FREQUENCY = "update-frequency";
-    private static String QUERING_FREQUENCY = "querying-frequency";
-    private static String REQUEST_INTERVAL = "request-interval";
-    private long queryingFrequency;
     private transient gsn.beans.DataField[] outputStructure = null;
+    private URL url;
+    private AddressBean addressBean;
+    private long queryingFrequency;
     private String urlPattern;
     private String urlFinal;
     private String restrictedPath = null;
-    private URL url;
-    private AddressBean addressBean;
     private String authorization = null;
-
-    String tomDateFormat;
-    String tomDateField;
-    String tomTimeField;
-    String tomTimeFormat;
+    private String tomDateFormat;
+    private String tomDateField;
+    private String tomTimeField;
+    private String tomTimeFormat;
 
     @Override
     public DataField[] getOutputFormat() {
-        logger.info("getOutputFormat.");
+        logger.info("Getting output format.");
         if (outputStructure == null) {
             initialize();
         }
@@ -48,11 +42,10 @@ public class ApiJsonWrapper extends AbstractWrapper {
 
     @Override
     public boolean initialize() {
-        logger.info("&&&" + this.hashCode());
         this.addressBean = getActiveAddressBean();
         initializeParametersFromFile();
         try {
-            logger.info("calling url: " + urlFinal);
+            logger.info("Calling url: " + urlFinal);
             url = new URL(urlFinal);
             // call the API and get the JSON structure from it.
             // Flatten it and initialize the OutputStructure.
@@ -66,19 +59,17 @@ public class ApiJsonWrapper extends AbstractWrapper {
     }
 
     public void run() {
-        logger.info("&&&" + this.hashCode());
         while (isActive()) {
             try {
                 urlFinal = UrlStrSubstitutor.substitute(urlPattern);
-                logger.info("calling url: " + urlFinal);
+                logger.info("Calling url: " + urlFinal);
                 url = new URL(urlFinal);
                 String jsonData = makeHttpCall(url);
-
                 Serializable[] objects = extractAttributes(jsonData);
-                logger.info("Output structure size:" + outputStructure.length + ". Objects number:  " + objects.length);
+                logger.info("Output structure size: " + outputStructure.length + ". Objects number:  " + objects.length);
                 StreamElement se = new StreamElement(outputStructure, objects);
                 postStreamElement(se);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 logger.error("Run: ", e);
             } finally {
                 try {
@@ -98,7 +89,6 @@ public class ApiJsonWrapper extends AbstractWrapper {
         }
         logger.info("connecting ...");
         httpUrlConnection.connect();
-
         try (
                 InputStream inputStream = httpUrlConnection.getInputStream();
                 InputStream errorStream = httpUrlConnection.getErrorStream();
@@ -125,30 +115,27 @@ public class ApiJsonWrapper extends AbstractWrapper {
             String[] jsonFieldTypes = new String[entities.length];
             for (int i = 0; i < entities.length; i++) {
                 String path = entities[i].split(":")[0].trim();
-                logger.info("entity " + i + " : " + path);
+                logger.debug("Entity " + i + " : " + path);
                 if (path.length() != 0) {
                     if (restrictedPath != null && !restrictedPath.isEmpty() && path.matches(restrictedPath)) {
-                        logger.info("skipping " + path);
+                        logger.debug("Skipping " + path);
                         continue;
                     }
                     jsonPathsFiledNames[j] = "$." + path;
-                    logger.info("path " + jsonPathsFiledNames[j]);
+                    logger.debug("Path " + jsonPathsFiledNames[j]);
                     String typeName = convertClassNameToGsnType(JsonPath.read(data, path).getClass().getName());
                     jsonFieldTypes[j] = typeName;
-                    logger.info("j: " + j);
                     j++;
-                    logger.info("j: " + j);
                 }
             }
-            logger.info("j: " + j);
             outputStructure = new DataField[j+1];
             for (int k = 0; k < j; k++) {
                 String name = "_" + jsonPathsFiledNames[k].replaceAll("[\\.\\[\\$\\]]", "__");
                 outputStructure[k] = new DataField(name.toUpperCase(), jsonFieldTypes[k], jsonPathsFiledNames[k]);
-                logger.info("outputStructure: name: " + jsonPathsFiledNames[k] + " *** type: " + jsonFieldTypes[k]);
+                logger.debug("OutputStructure: Name: " + jsonPathsFiledNames[k] + " Type: " + jsonFieldTypes[k]);
             }
             outputStructure[j] = new DataField("date_of_measurement", "varchar(100)", "Time when measurement occurred.");
-            logger.info("output structure size " + outputStructure.length);
+            logger.info("Output structure size: " + outputStructure.length);
         } catch (Exception e) {
             logger.error("JsonE: ", e);
         }
@@ -158,13 +145,12 @@ public class ApiJsonWrapper extends AbstractWrapper {
         logger.debug("extracting attributes.");
         //logger.info("data " + data);
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
-        Object document = Configuration.defaultConfiguration().jsonProvider().parse(data);
         for (int i = 0; i < outputStructure.length - 1; i++) {
             try {
                 String str = outputStructure[i].getDescription().replace("\"", "");
                 logger.debug("Extracting: " + str + " of type: " + outputStructure[i].getType());
                 dataValueFields[i] = (Serializable) JsonPath.read(data, str);
-                logger.info("field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
+                logger.debug("Field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
             } catch (Exception e) {
                 dataValueFields[i] = "";
                 logger.error(e.getMessage(), e);
@@ -172,7 +158,6 @@ public class ApiJsonWrapper extends AbstractWrapper {
         }
         String timeOfMeasurementValue = TimeFormatting.timeOfMeasurement(outputStructure, dataValueFields, tomDateFormat, tomTimeFormat, tomDateField, tomTimeField);
         dataValueFields[outputStructure.length - 1] = timeOfMeasurementValue;
-
         logger.info("dataValueFields size is " + dataValueFields.length);
         return dataValueFields;
     }
@@ -191,7 +176,6 @@ public class ApiJsonWrapper extends AbstractWrapper {
         return dataType;
     }
 
-
     private void initializeParametersFromFile() {
         String qfString = this.addressBean.getPredicateValue(QUERING_FREQUENCY);
         if (qfString != null && !qfString.isEmpty()) {
@@ -199,22 +183,19 @@ public class ApiJsonWrapper extends AbstractWrapper {
         } else {
             queryingFrequency = DEFAULT_RATE;
         }
-
         urlPattern = this.addressBean.getPredicateValue("url");
         authorization = this.addressBean.getPredicateValue("authorization");
         tomDateFormat = this.addressBean.getPredicateValue("measurement-date-format");
         tomDateField = this.addressBean.getPredicateValue("measurement-date-field");
         tomTimeFormat = this.addressBean.getPredicateValue("measurement-time-format");
         tomTimeField = this.addressBean.getPredicateValue("measurement-time-field");
-
         restrictedPath = this.addressBean.getPredicateValue("restricted-path");
         logger.debug("restricted path: " + restrictedPath);
         urlFinal = UrlStrSubstitutor.substitute(urlPattern);
     }
 
     @Override
-    public void dispose() {
-    }
+    public void dispose() {}
 
     @Override
     public String getWrapperName() {

@@ -1,0 +1,48 @@
+<virtual-sensor name="cimisScsDailyEtApi" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="provider" type="varchar(100)"/>
+            <field name="scope" type="varchar(100)"/>
+            <field name="day_asce_eto" type="varchar(100)"/>
+            <field name="day_sol_rad_avg" type="varchar(100)"/>
+            <field name="date" type="varchar(100)"/>
+            <field name="zip_codes" type="varchar(100)"/>
+            <field name="date_of_measurement" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>Virtual sensor for CIMIS spatial api. Needs the CIMIS API key below.</description>
+    <life-cycle pool-size="10"/>
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="40000"/>
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="api-json">
+                    <predicate key="measurement-frequency">900000</predicate>
+                    <predicate key="update-frequency">3600000</predicate>
+                    <predicate key="querying-frequency">43200000</predicate>
+                    <!-- 12h -->
+                    <predicate key="url">http://et.water.ca.gov/api/data?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=lat=34.99,lng=-118.34;lat=36.45,lng=-118.16&amp;dataItems=day-asce-eto,day-sol-rad-avg&amp;startDate=${date:P-2D:yyyy-MM-dd}&amp;endDate=${date:P-1D:yyyy-MM-dd}</predicate>
+                    <predicate key="measurement-date-format">yyyy-MM-dd</predicate>
+                    <predicate key="measurement-time-format"></predicate>
+                    <predicate key="measurement-date-field">_____data__providers__0____records__0____date</predicate>
+                    <predicate key="measurement-time-field"></predicate>
+                </address>
+                <query>select _____data__providers__0____owner as provider,
+                    _____data__providers__0____records__0____scope as scope,
+                    _____data__providers__0____records__0____dayasceeto__value as day_asce_eto,
+                    _____data__providers__0____records__0____daysolradavg__value as day_sol_rad_avg,
+                    _____data__providers__0____records__0____date as date,
+                    _____data__providers__0____records__0____zipcodes as zip_codes, date_of_measurement from wrapper
+                </query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>

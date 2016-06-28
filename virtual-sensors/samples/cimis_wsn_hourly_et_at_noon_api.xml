@@ -1,4 +1,4 @@
-<virtual-sensor name="cimisWsnHourlyEtAtNoon" priority="10">
+<virtual-sensor name="cimisWsnHourlyEtAtNoonApi" priority="10">
     <processing-class>
         <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
         <init-params>
@@ -35,21 +35,15 @@
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
-                <address wrapper="http-get-json">
-                    <predicate key="rate">46400000</predicate>
-                    <predicate key="url">http://et.water.ca.gov/api/data</predicate>
-                    <predicate key="request-parameters">?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd&amp;</predicate>
-
-                    <predicate key="rate-dynamic">hourly</predicate>
-                    <predicate key="url-time-format">yyyy-MM-dd</predicate>
-                    <predicate key="url-time-start-parameter-name">startDate</predicate>
-                    <predicate key="url-time-end-parameter-name">endDate</predicate>>
-
-                    <predicate key="request-format">application/json; charset=utf-8</predicate>
-
-                    <predicate key="tom-format">yyyy-MM-dd</predicate>
-                    <predicate key="tom-field">_____data__providers__0____records__0____date</predicate>
-                    <predicate key="tom-hour-field">_____data__providers__0____records__0____hour</predicate>
+                <address wrapper="api-json">
+                    <predicate key="measurement-frequency">900000</predicate>
+                    <predicate key="update-frequency">3600000</predicate>
+                    <predicate key="querying-frequency">1800000</predicate> <!-- 30min -->
+                    <predicate key="url">http://et.water.ca.gov/api/data?appKey=63b0410c-dfdb-44c4-882f-a1c452c2b385&amp;targets=155&amp;dataItems=hly-air-tmp,hly-dew-pnt,hly-eto,hly-net-rad,hly-asce-eto,hly-asce-etr,hly-precip,hly-rel-hum,hly-res-wind,hly-soil-tmp,hly-sol-rad,hly-vap-pres,hly-wind-dir,hly-wind-spd&amp;startDate=${date:P-2D:yyyy-MM-dd}&amp;endDate=${date:P-1D:yyyy-MM-dd}</predicate>
+                    <predicate key="measurement-date-format">yyyy-MM-dd</predicate>
+                    <predicate key="measurement-time-format">hhhh</predicate>
+                    <predicate key="measurement-date-field">_____data__providers__0____records__12____date</predicate>
+                    <predicate key="measurement-time-field">_____data__providers__0____records__12____hour</predicate>
                     <predicate key="restricted-path">Data.Providers....Records\[(2|3|4|5|6|7|8|9).*</predicate>
                 </address>
                 <query>select _____data__providers__0____owner as provider ,  _____data__providers__0____records__12____hlyrelhum__value as hlyrelhum ,  _____data__providers__0____records__12____hlyvappres__value as hlyvappres,  _____data__providers__0____records__12____hour as hour ,  _____data__providers__0____records__12____standard as standard,  _____data__providers__0____records__12____hlywinddir__value as hlywinddir ,  _____data__providers__0____records__12____date as date ,  _____data__providers__0____records__12____station as station ,  _____data__providers__0____records__12____scope as scope,  _____data__providers__0____records__12____hlyairtmp__value as hlyairtmp,  _____data__providers__0____records__12____hlydewpnt__value as hlydewpnt,  _____data__providers__0____records__12____hlyprecip__value as hlyprecip ,  _____data__providers__0____records__12____hlywindspd__value as hlywindspd ,  _____data__providers__0____records__12____hlyreswind__value as hlyreswind ,  _____data__providers__0____records__12____hlysolrad__value as hlysolrad ,  _____data__providers__0____records__12____hlysoiltmp__value as hlysoiltmp ,  _____data__providers__0____records__12____julian as julian ,  _____data__providers__0____records__12____zipcodes as zipcodes, date_of_measurement  from wrapper</query>

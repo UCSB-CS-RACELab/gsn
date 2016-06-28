@@ -18,11 +18,9 @@ import java.util.*;
 public class TimeFormatting {
     private static final String GSN_DATE_TIME_FORMAT = "yyyy-MM-dd hh:mm:ss";
     private static final String EMPTY = "0000-00-00 00:00:00";
-
+    private static Logger logger = Logger.getLogger(TimeFormatting.class);
 
     public static String timeOfMeasurement(DataField[] outputStructure, Serializable[] dataValueFields, String tomDateFormat, String tomTimeFormat, String tomDateField, String tomTimeField ) {
-        // Find the index in the outputStructure corresponding to the date field from the JSON response
-
         DateTime finalDT = null;
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(GSN_DATE_TIME_FORMAT);
 
@@ -33,6 +31,7 @@ public class TimeFormatting {
         }
 
         int tomDateFieldIndex = -1;
+        // Find the index in the outputStructure corresponding to the date field from the JSON response
         for (int i = 0; i < outputStructure.length; i++) {
             if (tomDateField.equalsIgnoreCase(outputStructure[i].getName())) {
                 tomDateFieldIndex = i;
@@ -52,9 +51,9 @@ public class TimeFormatting {
 
         // Time
 
-        if(!(Strings.isNullOrEmpty(tomTimeField) || Strings.isNullOrEmpty(tomTimeFormat))) {
-            logger.error("Measurement date field not specified.");
-
+        if(Strings.isNullOrEmpty(tomTimeField) || Strings.isNullOrEmpty(tomTimeFormat)) {
+            finalDT = new DateTime(year, month, day, 0, 0, 0);
+        } else {
             int tomTimeFieldIndex = -1;
 
             for (int i = 0; i < outputStructure.length; i++) {
@@ -64,24 +63,21 @@ public class TimeFormatting {
             }
             String timeString = String.valueOf(dataValueFields[tomTimeFieldIndex]);
 
-            DateTimeFormatter measurementTimeFormatter = DateTimeFormat.forPattern(tomTimeFormat);
-            DateTime t = measurementTimeFormatter.parseDateTime(timeString);
-
-            int hour = t.getHourOfDay();
-            int minute = t.getMinuteOfHour();
-            int second = t.getSecondOfMinute();
-            finalDT = new DateTime(year, month, day, hour, minute, second);
-
-        } else {
-            finalDT = new DateTime(year, month, day, 0, 0, 0);
-
+            if(tomTimeFormat.equalsIgnoreCase("hhhh")) {
+                long hour = Long.parseLong(timeString)/100;
+                finalDT = new DateTime(year, month, day, (int) hour, 0, 0);
+            } else {
+                DateTimeFormatter measurementTimeFormatter = DateTimeFormat.forPattern(tomTimeFormat);
+                DateTime t = measurementTimeFormatter.parseDateTime(timeString);
+                int hour = t.getHourOfDay();
+                int minute = t.getMinuteOfHour();
+                int second = t.getSecondOfMinute();
+                finalDT = new DateTime(year, month, day, hour, minute, second);
+            }
         }
-
         return dateTimeFormatter.print(finalDT);
     }
 
-
-    private static Logger logger = Logger.getLogger(TimeFormatting.class);
     public static String convertTime(String oldFormat, String newFormat, String oldDate) throws ParseException {
         logger.info("from: " + oldFormat + " to: " + newFormat + " for the field: " + oldDate);
         SimpleDateFormat oldSdf = new SimpleDateFormat(oldFormat, Locale.US);
