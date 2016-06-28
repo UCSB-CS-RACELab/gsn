@@ -145,15 +145,16 @@ public class ApiJsonWrapper extends AbstractWrapper {
         logger.debug("extracting attributes.");
         //logger.info("data " + data);
         Serializable[] dataValueFields = new Serializable[outputStructure.length];
+        String str = "";
         for (int i = 0; i < outputStructure.length - 1; i++) {
             try {
-                String str = outputStructure[i].getDescription().replace("\"", "");
+                str = outputStructure[i].getDescription().replace("\"", "");
                 logger.debug("Extracting: " + str + " of type: " + outputStructure[i].getType());
                 dataValueFields[i] = (Serializable) JsonPath.read(data, str);
                 logger.debug("Field " + i + ": " + dataValueFields[i] + " type: " + dataValueFields[i].getClass().getName());
             } catch (Exception e) {
                 dataValueFields[i] = "";
-                logger.error(e.getMessage(), e);
+                logger.error(e.getMessage() + "str: " + str, e);
             }
         }
         String timeOfMeasurementValue = TimeFormatting.timeOfMeasurement(outputStructure, dataValueFields, tomDateFormat, tomTimeFormat, tomDateField, tomTimeField);

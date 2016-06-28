@@ -21,6 +21,7 @@ public class TimeFormatting {
     private static Logger logger = Logger.getLogger(TimeFormatting.class);
 
     public static String timeOfMeasurement(DataField[] outputStructure, Serializable[] dataValueFields, String tomDateFormat, String tomTimeFormat, String tomDateField, String tomTimeField ) {
+        logger.info("tomDateFormat: " + tomDateFormat + " tomTimeFormat: " + tomTimeFormat + " tomDateField: " + tomDateField + " tomTimeField: " + tomTimeField);
         DateTime finalDT = null;
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(GSN_DATE_TIME_FORMAT);
 

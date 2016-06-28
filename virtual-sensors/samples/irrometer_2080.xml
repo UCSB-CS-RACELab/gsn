@@ -26,7 +26,7 @@
         <predicate key="geographical">
         </predicate>
     </addressing>
-    <storage history-size="100" />
+    <storage history-size="100000" />
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">

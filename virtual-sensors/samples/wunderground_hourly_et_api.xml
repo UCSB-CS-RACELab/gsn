@@ -23,28 +23,43 @@
             <field name="date_of_measurement" type="varchar(100)"/>
         </output-structure>
     </processing-class>
-    <description>Hourly virtual sensor for Wunderground KSBA station. ET parameters. Needs API key. Runs twice per hour.</description>
-    <life-cycle pool-size="10" />
+    <description>Hourly virtual sensor for Wunderground KSBA station. ET parameters. Needs API key. Runs twice per
+        hour.
+    </description>
+    <life-cycle pool-size="10"/>
     <addressing>
         <predicate key="geographical">
         </predicate>
     </addressing>
-    <storage history-size="40000" />
+    <storage history-size="40000"/>
     <streams>
         <stream name="input1">
             <source alias="source1" sampling-rate="1" storage-size="1">
                 <address wrapper="api-json">
                     <predicate key="measurement-frequency"></predicate>
                     <predicate key="update-frequency"></predicate>
-                    <predicate key="querying-frequency">1800000</predicate> <!-- 30 min -->
+                    <predicate key="querying-frequency">1800000</predicate>
+                    <!-- 30 min -->
                     <predicate key="request-interval"></predicate>
-                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json</predicate>
+                    <predicate key="url">http://api.wunderground.com/api/452d60ad282f18c9/conditions/q/KSBA.json
+                    </predicate>
                     <predicate key="measurement-date-format">epoch</predicate>
                     <predicate key="measurement-time-format"></predicate>
                     <predicate key="measurement-date-field">_____current_observation__local_epoch</predicate>
                     <predicate key="measurement-time-field"></predicate>
                 </address>
-                <query>select _____current_observation__station_id as station ,_____current_observation__local_epoch as epoch_date ,_____current_observation__temp_c as temp ,_____current_observation__local_epoch as epoch_hour ,_____current_observation__dewpoint_c as dew_pnt ,_____current_observation__precip_today_metric as precip_day ,_____current_observation__relative_humidity as rel_hum ,_____current_observation__precip_1hr_metric as precip_hour ,_____current_observation__pressure_in as vap_pres ,_____current_observation__solarradiation as sol_rad ,_____current_observation__wind_dir as wind_dir ,_____current_observation__pressure_mb as pressure,        _____current_observation__display_location__latitude as lat ,_____current_observation__wind_kph as wind_spd , _____current_observation__display_location__longitude as lon ,_____current_observation__display_location__zip as zip, date_of_measurement  from wrapper </query>
+                <query>select _____current_observation__station_id as station ,_____current_observation__local_epoch as
+                    epoch_date ,_____current_observation__temp_c as temp ,_____current_observation__local_epoch as
+                    epoch_hour ,_____current_observation__dewpoint_c as dew_pnt
+                    ,_____current_observation__precip_today_metric as precip_day
+                    ,_____current_observation__relative_humidity as rel_hum ,_____current_observation__precip_1hr_metric
+                    as precip_hour ,_____current_observation__pressure_in as vap_pres
+                    ,_____current_observation__solarradiation as sol_rad ,_____current_observation__wind_dir as wind_dir
+                    ,_____current_observation__pressure_mb as pressure,
+                    _____current_observation__display_location__latitude as lat ,_____current_observation__wind_kph as
+                    wind_spd , _____current_observation__display_location__longitude as lon
+                    ,_____current_observation__display_location__zip as zip, date_of_measurement from wrapper
+                </query>
             </source>
             <query>select * from source1</query>
         </stream>
