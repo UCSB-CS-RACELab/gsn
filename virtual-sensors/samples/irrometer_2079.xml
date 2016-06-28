@@ -1,0 +1,51 @@
+<virtual-sensor name="Irrometer_2079" priority="10">
+    <processing-class>
+        <class-name>gsn.vsensor.BridgeVirtualSensor</class-name>
+        <init-params>
+        </init-params>
+        <output-structure>
+            <field name="id" type="Integer"/>
+            <field name="sensmit_id" type="varchar(100)"/>
+            <field name="seconds" type="Integer"/>
+            <field name="timestamp" type="varchar(100)"/>
+            <field name="MO1" type="varchar(100)"/>
+            <field name="MO2" type="varchar(100)"/>
+            <field name="MO3" type="varchar(100)"/>
+            <field name="INT" type="varchar(100)"/>
+            <field name="EXT" type="varchar(100)"/>
+            <field name="POW" type="varchar(100)"/>
+            <field name="CAP" type="varchar(100)"/>
+            <field name="TIP" type="varchar(100)"/>
+            <field name="IRR" type="varchar(100)"/>
+            <field name="date_of_measurement" type="varchar(100)"/>
+        </output-structure>
+    </processing-class>
+    <description>Virtual sensor for Irrometer api. 2079 - Base B70D160D</description>
+    <life-cycle pool-size="10" />
+    <addressing>
+        <predicate key="geographical">
+        </predicate>
+    </addressing>
+    <storage history-size="100" />
+    <streams>
+        <stream name="input1">
+            <source alias="source1" sampling-rate="1" storage-size="1">
+                <address wrapper="api-json">
+                    <predicate key="measurement-frequency">1800000</predicate>
+                    <predicate key="update-frequency">1800000</predicate>
+                    <predicate key="querying-frequency">1200000</predicate>
+                    <predicate key="url">http://www.sensmitweb.com/api/v1/sensmits/2079/data/?start_time=${date:PT-2H:yyyy-MM-dd'T'hh:mm:ssZ}&amp;end_time=${date:PT-1H:yyyy-MM-dd'T'hh:mm:ssZ}</predicate>
+                    <predicate key="authorization">ApiKey user_1449963207378.733:96a6449f0ee62e81a01be77d12c79f4de4ee5b80</predicate>
+                    <predicate key="measurement-date-format">epoch</predicate>
+                    <predicate key="measurement-time-format"></predicate>
+                    <predicate key="measurement-date-field">_____objects__0____seconds</predicate>
+                    <predicate key="measurement-time-field"></predicate>
+                    <predicate key="restricted-path">.*objects\[[^0].*</predicate>
+
+                </address>
+                <query>select _____objects__0____id as id, _____objects__0____sensmit_id as sensmit_id, _____objects__0____seconds as seconds, _____objects__0____timestamp as timestamp, _____objects__0____MO1 as MO1, _____objects__0____MO2 as MO2, _____objects__0____MO3 as MO3, _____objects__0____INT as INT, _____objects__0____EXT as EXT, _____objects__0____POW as POW, _____objects__0____CAP as CAP, _____objects__0____TIP as TIP, _____objects__0____IRR as IRR, date_of_measurement from wrapper</query>
+            </source>
+            <query>select * from source1</query>
+        </stream>
+    </streams>
+</virtual-sensor>
