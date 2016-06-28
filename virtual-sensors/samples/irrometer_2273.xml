@@ -33,7 +33,7 @@
                     <predicate key="measurement-frequency">1800000</predicate>
                     <predicate key="update-frequency">1800000</predicate>
                     <predicate key="querying-frequency">1200000</predicate>
-                    <predicate key="url">http://www.sensmitweb.com/api/v1/sensmits/2273/data/?start_time=${date:PT-5H:yyyy-MM-dd'T'hh:mm:ssZ}&amp;end_time=${date:PT-2H:yyyy-MM-dd'T'hh:mm:ssZ}</predicate>
+                    <predicate key="url">http://www.sensmitweb.com/api/v1/sensmits/2273/data/?start_time=${date:PT-23H:yyyy-MM-dd'T'hh:mm:ssZ}&amp;end_time=${date:PT-15H:yyyy-MM-dd'T'hh:mm:ssZ}</predicate>
                     <predicate key="authorization">ApiKey user_1449963207378.733:96a6449f0ee62e81a01be77d12c79f4de4ee5b80</predicate>
                     <predicate key="measurement-date-format">epoch</predicate>
                     <predicate key="measurement-time-format"></predicate>
