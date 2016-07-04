@@ -16,6 +16,7 @@ public class ApiJsonWrapper extends AbstractWrapper {
     private static final Logger logger = Logger.getLogger(ApiJsonWrapper.class);
     private static final String WRAPPER_NAME = "ApiJsonWrapper";
     private static final String QUERING_FREQUENCY = "querying-frequency";
+    private static final long INITIALIZING_FREQUENCY = 300000;
     private static final int DEFAULT_RATE = 3600 * 1000; // time in milliseconds
 
     private transient gsn.beans.DataField[] outputStructure = null;
@@ -52,7 +53,10 @@ public class ApiJsonWrapper extends AbstractWrapper {
             String data = makeHttpCall(url);
             extractAttributesForOutputStructure(data);
         } catch (Exception e) {
-            logger.error("Initialization error. ", e);
+            logger.error("Initialization error. Going to sleep.", e);
+            try {
+                Thread.sleep(INITIALIZING_FREQUENCY);
+            } catch (InterruptedException e1) {}
             return false;
         }
         return true;
