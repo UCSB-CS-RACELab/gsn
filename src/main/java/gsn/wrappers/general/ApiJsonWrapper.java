@@ -53,10 +53,7 @@ public class ApiJsonWrapper extends AbstractWrapper {
             String data = makeHttpCall(url);
             extractAttributesForOutputStructure(data);
         } catch (Exception e) {
-            logger.error("Initialization error. Going to sleep.", e);
-            try {
-                Thread.sleep(INITIALIZING_FREQUENCY);
-            } catch (InterruptedException e1) {}
+            logger.error("Initialization error.", e);
             return false;
         }
         return true;
